@@ -1,0 +1,33 @@
+INSTALL
+
+	0. install SL4A
+	1. download Android CLI executable from http://rebolsource.net/; rename it "rebol3"; place it in /sdcard/
+	2. copy sl4a.reb, altjson.reb from this repo to /sdcard/
+	3. copy rebol3.sh from this repo to /sdcard/sl4a/scripts/
+	4. from SL4A launch rebol3.sh in terminal mode
+	5. test: >> sl4a 'makeToast "Rebol is alive!"
+	6. delete rebol3, altjson.reb, sl4a.reb from /sdcard/
+
+SYNTAX
+
+	sl4a method params
+
+	method: lit-word! | string!
+
+	params: block! or shortcut:
+
+	shortcut:
+		none => []
+		value => [value]
+
+	e.g. :
+
+	sl4a 'getClipboard none
+	sl4a 'setClipboard "Rebol"
+	sl4a 'fullShow [layout-string title]
+	sl4a 'fullDismiss none
+	sl4a 'ttsSpeak "The voice of Rebol"
+
+
+		
+
