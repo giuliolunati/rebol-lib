@@ -1,0 +1,16 @@
+var (int) s: 7 + 8
+f[x y + 2 z + (7 / 3)]
+f: function [(int const) x y (char) z] [
+	var s
+	s: 7 * 8
+]
+function [x y] [
+	var (const char) s
+	s/(1): z - 2 / 3
+]
+(void*) g: function [] [
+	var s: 7 + 8
+	x + y := b * g
+]
+
+; vim: set syn=rebol :
