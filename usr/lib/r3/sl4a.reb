@@ -1,11 +1,4 @@
 REBOL [
-export TMPDIR=~/tmp
-export TMPDIR=~/tmp
-export TMPDIR=~/tmp
-export TMPDIR=~/tmp
-export TMPDIR=~/tmp
-export TMPDIR=~/tmp
-export TMPDIR=~/tmp
 	title: "SL4A interface"
 	name: 'sl4a
 	type: 'module
@@ -154,4 +147,4 @@ sl4a: function/with [method params] [
 
 sl4a '_authenticate get-env 'AP_HANDSHAKE
 
-comment[ vim: set sw=2 ts=2 sts=2: ]
+comment[ vim: set syn=rebol sw=2 ts=2 sts=2: ]
