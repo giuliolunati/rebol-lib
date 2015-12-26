@@ -122,17 +122,17 @@ sys/make-scheme [
 		]
 	]
 ]
-sl4a: function/with [method params] [
-	self/id: self/id + 1
+sl4a: function/with ['method params] [
+	id: id + 1
 	k: t: none
 	m: :method
-	i: self/id
+	i: id
 	p: either/only block? params
 		reduce params
 		either/only params
 			reduce [params]
 			[]
-	res: write self/client join to-json object [
+	res: write client join to-json object [
 		id: i
 		method: m
 		params: p
@@ -145,6 +145,8 @@ sl4a: function/with [method params] [
 	]
 ]
 
-sl4a '_authenticate get-env 'AP_HANDSHAKE
+lib/browse: func [url] [sl4a view [url none none]]
 
-comment[ vim: set syn=rebol sw=2 ts=2 sts=2: ]
+sl4a _authenticate get-env 'AP_HANDSHAKE
+
+; vim: set syn=rebol sw=2 ts=2 sts=2:
