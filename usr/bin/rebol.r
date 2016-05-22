@@ -1,2 +1,3 @@
-insert system/options/module-paths join to file! get-env 'HOME %/lib/rebol3/
+insert system/options/module-paths join system/options/home %../lib/r3
 import 'sl4a
+; vim: set syn=rebol :
