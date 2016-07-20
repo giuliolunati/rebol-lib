@@ -10,7 +10,10 @@ REBOL [
 ;; FIND ERROR
 ok: none
 oks: make block! 16
-pr: func [x [block!] width] [
+print-block-pos: func [
+    x [block!]
+    width [integer!] "how much text"
+  ][
 	print [
 		either tail? x ["TAIL"]
 			to string! reduce["POS: ... " copy/part mold/only x width "..."]
@@ -18,7 +21,10 @@ pr: func [x [block!] width] [
 		copy/part mold/only head x width "...^/]"
 	]
 ]
-find-err: function [code [block!] oks] [
+find-err: function [
+    code [block!]
+    oks [block!]
+  ][
 	p: head oks
 	forall p [
 		if (head p/1) != head code [continue]
@@ -275,7 +281,7 @@ to-c: function [
 		statements!
 	] [
 		PRIN "*** ERROR ***^/NEAR: "
-		pr find-err code oks 58
+		print-block-pos find-err code oks 58
 		quit
 	]
 	first stack
