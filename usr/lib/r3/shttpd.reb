@@ -49,13 +49,14 @@ shttpd: has [
         ]
     ]
 
-    handle-request: func [config req /local uri type file data ext] [
+    handle-request: func [config req /local uri path type file data ext] [
         parse to-string req ["get " ["/ " | copy uri to " "]]
         uri: default "index.html"
         print ["URI:" uri]
-        parse uri [some [thru "."] copy ext to end (type: mime-map/:ext)]
+        parse uri [ copy path [to #"?" | to end]]
+        parse path [some [thru "."] copy ext to end (type: mime-map/:ext)]
         type: default "application/octet-stream"
-        if not exists? file: config/root/:uri [return error-response 404 uri]
+        if not exists? file: config/root/:path [return error-response 404 uri]
         if error? try [data: read file] [return error-response 400 uri]
         reduce [200 type data]
     ]
