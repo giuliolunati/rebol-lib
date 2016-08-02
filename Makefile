@@ -44,20 +44,48 @@ control:
 	Version: ${VERSION}\n\
 	Description:" > $@
 
+.PHONY: sync
 sync:
 	@for o in ${FILES}; do \
 	  i=/$$o; \
 	  [ -f $$i ] || continue; \
 	  if [ $$i -nt $$o ]; then \
-	    echo sync $$o; \
-	    cp -a $$i $$o; \
+	    echo update '->' $$o '?'; \
+	    echo '[(yes) r(everse), n(o)]'; \
+	    read x; \
+	    case $$x in \
+	    r*) cp -a $$o $$i ;; \
+	    n*) ;; \
+	    *) cp -a $$i $$o ;; \
+	    esac; \
 	  else \
 	    if [ $$o -nt $$i ]; then \
-	      echo sync $$i; \
-	      cp -a $$o $$i; \
+	      echo install '<-' $$o '?'; \
+	      echo '[(yes), r(everse), n(o)]';\
+	      read x; \
+	      case $$x in \
+	      r*) cp -a $$i $$o ;; \
+	      n*) ;; \
+	      *) cp -a $$o $$i ;; \
+	      esac; \
 	    fi; \
 	  fi; \
 	done
 
+.PHONY: comp
+comp:
+	@for o in ${FILES}; do \
+	  i=/$$o; \
+	  [ -f $$i ] || continue; \
+	  if [ $$i -nt $$o ]; then \
+	    echo update '->' $$o; \
+	  else \
+	    if [ $$o -nt $$i ]; then \
+	      echo install '<-' $$o; \
+	    fi; \
+	  fi; \
+	done
+
+.PHONY: clean
 clean:
 	rm ${DEB} control.tar.gz data.tar.gz
