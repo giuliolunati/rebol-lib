@@ -31,22 +31,7 @@ shttpd: has [
         write port ajoin ["Content-type: " type crlf]
         write port ajoin ["Content-length: " length? body crlf]
         write port crlf
-        ;; Manual chunking is only necessary because of several bugs in R3's
-        ;; networking stack (mainly cc#2098 & cc#2160; in some constellations also
-        ;; cc#2103). Once those are fixed, we should directly use R3's internal
-        ;; chunking instead: `write port body`.
-        port/locals: copy body
-    ]
-
-    send-chunk: func [port] [
-        ;; Trying to send data >32'000 bytes at once will trigger R3's internal
-        ;; chunking (which is buggy, see above). So we cannot use chunks >32'000
-        ;; for our manual chunking.
-        either empty? port/locals [
-            _
-        ][
-            write port take/part port/locals 32'000
-        ]
+        write port body
     ]
 
     handle-request: func [config req /local uri path type file data ext] [
@@ -72,7 +57,6 @@ shttpd: has [
                     read port
                 ]
             ]
-            wrote [unless send-chunk port [close port]]
             close [close port]
         ]
     ]
