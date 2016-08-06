@@ -2,8 +2,8 @@ REBOL [
     title: "A tiny static HTTP server"
     author: ["abolka" "Giulio Lunati"]
     date: [2009-11-04 2016-07-25]
-	name: shttpd
-	type: module
+    name: shttpd
+    type: module
     exports: [shttpd]
 ]
 
@@ -20,12 +20,12 @@ shttpd: has [
         <a href="http://www.rebol.com/rebol3/">REBOL 3</a> $r3</body></html>
     }
 
-    error-response: func [code uri /local values] [
+    error-response: func [code uri values:] [
         values: [code (code) text (code-map/:code) uri (uri) r3 (system/version)]
         reduce [code "text/html" reword error-template compose values]
     ]
 
-    start-response: func [port res /local code text type body] [
+    start-response: func [port res code: text: type: body:] [
         set [code type body] res
         write port ajoin ["HTTP/1.0 " code " " code-map/:code crlf]
         write port ajoin ["Content-type: " type crlf]
@@ -34,7 +34,7 @@ shttpd: has [
         write port body
     ]
 
-    handle-request: func [config req /local uri path type file data ext] [
+    handle-request: func [config req uri: path: type: file: data: ext:] [
         parse to-string req ["get " ["/ " | copy uri to " "]]
         uri: default "index.html"
         print ["URI:" uri]
@@ -46,7 +46,7 @@ shttpd: has [
         reduce [200 type data]
     ]
 
-    awake-client: func [event /local port res] [
+    awake-client: func [event port: res:] [
         port: event/port
         switch event/type [
             read [
@@ -61,7 +61,7 @@ shttpd: has [
         ]
     ]
 
-    awake-server: func [event /local client] [
+    awake-server: func [event client:] [
         if event/type = 'accept [
             client: first event/port
             client/awake: :awake-client
@@ -69,11 +69,11 @@ shttpd: has [
         ]
     ]
 
-    serve: func [web-port web-root /local listen-port] [
+    serve: func [web-port web-root listen-port:] [
         listen-port: open join tcp://: web-port
         listen-port/locals: has compose/deep [config: [root: (web-root)]]
         listen-port/awake: :awake-server
         wait listen-port
-    ]
+    ]    
 ]
 ; vim: set syn=rebol sw=4 ts=4:
