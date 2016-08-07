@@ -34,15 +34,37 @@ shttpd: has [
         write port body
     ]
 
+    html-list-dir: func [file data: out:] [
+        out: make string! 256
+        while [#"/" = last file] [take/last file]
+        if error? try [data: read append file %/] [return false]
+        for-each i data [
+            append out ajoin [ {<a href="} file i {">} i </a> <br/>]
+        ]
+        out
+    ]
+
     handle-request: func [config req uri: path: type: file: data: ext:] [
-        parse to-string req ["get " ["/ " | copy uri to " "]]
-        uri: default "index.html"
+        parse to-string req ["get " copy uri to " "]
         print ["URI:" uri]
         parse uri [ copy path [to #"?" | to end]]
-        parse path [some [thru "."] copy ext to end (type: mime-map/:ext)]
-        type: default "application/octet-stream"
-        if not exists? file: config/root/:path [return error-response 404 uri]
-        if error? try [data: read file] [return error-response 400 uri]
+        if path = %/ [append path %.] ;; workaround for buggy `query %/`
+        file: config/root/:path
+        unless type: get in query file 'type
+        [return error-response 404 uri]
+        switch type [
+            dir [
+                type: "text/html"
+                unless data: html-list-dir file
+                [return error-response 400 uri]
+                data: to-binary data
+            ]
+            file [
+                parse path [some [thru "."] copy ext to end (type: mime-map/:ext)]
+                type: default "application/octet-stream"
+                if error? try [data: read file] [return error-response 400 uri]
+            ]
+        ]
         reduce [200 type data]
     ]
 
