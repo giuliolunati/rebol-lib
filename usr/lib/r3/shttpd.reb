@@ -34,38 +34,53 @@ shttpd: has [
         write port body
     ]
 
-    html-list-dir: func [file data: out:] [
+    html-list-dir: func [file list: out:] [
         out: make string! 256
         while [#"/" = last file] [take/last file]
-        if error? try [data: read append file %/] [return false]
-        for-each i data [
+        if error? try [list: read append file %/] [return false]
+        for-each i list [
             append out ajoin [ {<a href="} file i {">} i </a> <br/>]
         ]
         out
     ]
-
-    handle-request: func [config req uri: path: type: file: data: ext:] [
-        parse to-string req ["get " copy uri to " "]
-        print ["URI:" uri]
-        parse uri [ copy path [to #"?" | to end]]
+    handle-request: func [config req
+        uri: type: file: list: ext: c:
+        method: path: query: version: headers: data:
+        ] [
+        c: charset "? "
+        parse to-string req [
+            copy method to space
+            skip
+            copy uri to space
+            skip
+            copy version to newline
+            skip
+            copy headers to "^/^/"
+            2 skip
+            data:
+        ]
+        parse uri [
+            copy path [to #"?" | to end]
+            copy query to end
+        ]
         if path = %/ [append path %.] ;; workaround for buggy `query %/`
         file: config/root/:path
-        unless type: get in query file 'type
+        unless type: exists? file
         [return error-response 404 uri]
         switch type [
             dir [
                 type: "text/html"
-                unless data: html-list-dir file
+                unless list: html-list-dir file
                 [return error-response 400 uri]
-                data: to-binary data
+                list: to-binary list
             ]
             file [
                 parse path [some [thru "."] copy ext to end (type: mime-map/:ext)]
                 type: default "application/octet-stream"
-                if error? try [data: read file] [return error-response 400 uri]
+                if error? try [list: read file] [return error-response 400 uri]
             ]
         ]
-        reduce [200 type data]
+        reduce [200 type list]
     ]
 
     awake-client: func [event port: res:] [
