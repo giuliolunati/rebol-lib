@@ -43,9 +43,23 @@ shttpd: has [
         ]
         out
     ]
+    
+    ;; One can customize handle-request defining
+    ;; shttpd/custom-handle-request: func [
+    ;;   config method path query protocol headers data ][
+    ;;   do something
+    ;;   then
+    ;;     return reduce [code type data]
+    ;;   to bypass handle-request
+    ;;   or
+    ;;     return false
+    ;;   to return to handle-request
+    ;; ]
+    custom-handle-request: false
+
     handle-request: func [config req
-        uri: type: file: list: ext: c:
-        method: path: query: version: headers: data:
+        uri: type: file: list: ext: c: res:
+        method: path: query: protocol: headers: data:
         ] [
         c: charset "? "
         parse to-string req [
@@ -53,7 +67,7 @@ shttpd: has [
             skip
             copy uri to space
             skip
-            copy version to newline
+            copy protocol to newline
             skip
             copy headers to "^/^/"
             2 skip
@@ -63,6 +77,10 @@ shttpd: has [
             copy path [to #"?" | to end]
             copy query to end
         ]
+        if all [
+            :custom-handle-request
+            res: custom-handle-request config method path query protocol headers data
+        ] [return res]
         if path = %/ [append path %.] ;; workaround for buggy `query %/`
         file: config/root/:path
         unless type: exists? file
