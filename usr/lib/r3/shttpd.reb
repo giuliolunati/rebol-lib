@@ -1,134 +1,108 @@
 REBOL [
-    title: "A tiny static HTTP server"
-    author: ["abolka" "Giulio Lunati"]
-    date: [2009-11-04 2016-07-25]
-    name: shttpd
-    type: module
-    exports: [shttpd]
+	Title: "Static web server"
+	Type: module
+	Name: shttpd
+	Author: "Giulio Lunati"
+	Email: giuliolunati@gmail.com
+	Date: 2016-09-01
+	; Needs: websy
 ]
 
-shttpd: has [
-    code-map: make map! [200 "OK" 400 "Forbidden" 404 "Not Found"]
-    mime-map: make map! [
-        "html" "text/html" "css" "text/css" "js" "application/javascript"
-        "gif" "image/gif" "jpg" "image/jpeg" "png" "image/png"
-        "r" "text/plain" "r3" "text/plain" "reb" "text/plain"
-    ]
-    error-template: trim/auto {
-        <html><head><title>$code $text</title></head><body><h1>$text</h1>
-        <p>Requested URI: <code>$uri</code></p><hr><i>shttpd.r</i> on
-        <a href="http://www.rebol.com/rebol3/">REBOL 3</a> $r3</body></html>
-    }
+websy: import 'websy
+config: websy/config
 
-    error-response: func [code uri values:] [
-        values: [code (code) text (code-map/:code) uri (uri) r3 (system/version)]
-        reduce [code "text/html" reword error-template compose values]
-    ]
+websy/extend/set [
 
-    start-response: func [port res code: text: type: body:] [
-        set [code type body] res
-        write port ajoin ["HTTP/1.0 " code " " code-map/:code crlf]
-        write port ajoin ["Content-type: " type crlf]
-        write port ajoin ["Content-length: " length? body crlf]
-        write port crlf
-        write port body
-    ]
+	append config [root: %/ list-dir: true]
 
-    html-list-dir: func [file list: out:] [
-        out: make string! 256
-        while [#"/" = last file] [take/last file]
-        if error? try [list: read append file %/] [return false]
-        for-each i list [
-            append out ajoin [ {<a href="} file i {">} i </a> <br/>]
-        ]
-        out
-    ]
-    
-    ;; One can customize handle-request defining
-    ;; shttpd/custom-handle-request: func [
-    ;;   config method path query protocol headers data ][
-    ;;   do something
-    ;;   then
-    ;;     return reduce [code type data]
-    ;;   to bypass handle-request
-    ;;   or
-    ;;     return false
-    ;;   to return to handle-request
-    ;; ]
-    custom-handle-request: false
+	ext-map: make map! [
+		"css" css
+		"gif" gif
+		"htm" html
+		"html" html
+		"jpg" jpg
+		"jpeg" jpg
+		"js" js
+		"json" json
+		"png" png
+		"r" rebol
+		"r3" rebol
+		"reb" rebol
+		"txt" txt
+	]
 
-    handle-request: func [config req
-        uri: type: file: list: ext: c: res:
-        method: path: query: protocol: headers: data:
-        ] [
-        c: charset "? "
-        parse to-string req [
-            copy method to space
-            skip
-            copy uri to space
-            skip
-            copy protocol to newline
-            skip
-            copy headers to "^/^/"
-            2 skip
-            data:
-        ]
-        parse uri [
-            copy path [to #"?" | to end]
-            copy query to end
-        ]
-        if all [
-            :custom-handle-request
-            res: custom-handle-request config method path query protocol headers data
-        ] [return res]
-        if path = %/ [append path %.] ;; workaround for buggy `query %/`
-        file: config/root/:path
-        unless type: exists? file
-        [return error-response 404 uri]
-        switch type [
-            dir [
-                type: "text/html"
-                unless list: html-list-dir file
-                [return error-response 400 uri]
-                list: to-binary list
-            ]
-            file [
-                parse path [some [thru "."] copy ext to end (type: mime-map/:ext)]
-                type: default "application/octet-stream"
-                if error? try [list: read file] [return error-response 400 uri]
-            ]
-        ]
-        reduce [200 type list]
-    ]
+	html-list-dir: function [
+		"Output dir contents in HTML."
+		dir [file!]
+		param "config/list-dir value"
+	] [
+		if error? try [list: read dir] [
+			return build-error-response 400 request ""
+		]
+		insert list ".."
+		sort list
+		data: make string! 256
+		for-each i list [
+			append data ajoin [ {<a href="} dir i {">} i </a> <br/>]
+		]
+		return reduce [200 'html data]
+	]
 
-    awake-client: func [event port: res:] [
-        port: event/port
-        switch event/type [
-            read [
-                either find port/data to-binary join crlf crlf [
-                    res: handle-request port/locals/config port/data
-                    start-response port res
-                ] [
-                    read port
-                ]
-            ]
-            close [close port]
-        ]
-    ]
+	handle-get: function [
+		"Handle a get request and serves files and folders"
+		request [string!]
+	][
+		if not config/root [
+			return build-error-response 400 request "You must set root!"
+		]
+		req: parse-request request
+		mime: ext-map/(req/file-type)
+		file: join config/root req/path
+		type: exists? file
+		if type = 'dir [
+			while [#"/" = last file] [take/last file]
+			append file #"/"
+			if not config/list-dir [ 
+				return build-error-response
+					400 request "No folder access."
+			]
+			either file? config/list-dir [
+				file-index: join file config/list-dir
+				either 'file = exists? file-index [
+					;; drop to type = 'dir
+					file: file-index
+					type: 'file
+					mime: 'html
+				] [
+					return build-error-response
+						404 request
+						ajoin [file-index " not found."]
+				]
+			] [
+				return html-list-dir file config/list-dir
+			]
+		]
+		if type = 'file [
+			either error? data: trap [read file] [
+				return build-error-response 400 request join "Cannot read file " file
+			] [
+				return reduce [200 mime data]
+			]
+		]
+		return build-error-response 404 request ""
+	]
 
-    awake-server: func [event client:] [
-        if event/type = 'accept [
-            client: first event/port
-            client/awake: :awake-client
-            read client
-        ]
-    ]
-
-    serve: func [web-port web-root listen-port:] [
-        listen-port: open join tcp://: web-port
-        listen-port/locals: has compose/deep [config: [root: (web-root)]]
-        listen-port/awake: :awake-server
-        wait listen-port
-    ]    
 ]
-; vim: set syn=rebol sw=4 ts=4:
+
+start: func [
+	"Starts web server"
+	port [integer!] "web server port"
+	root [file! string!] "web server root directory"
+] [
+	config/port: port
+	while [#"/" = last root] [take/last root]
+	config/root: to-file root
+	websy/start
+]
+
+; vim: set syn=rebol:

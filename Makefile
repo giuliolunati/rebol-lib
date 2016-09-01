@@ -19,6 +19,7 @@ usr/lib/r3/sl4a.reb \
 usr/lib/r3/html.reb \
 usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
+usr/lib/r3/websy.reb \
 usr/lib/r3/shttpd.reb \
 usr/share/scripts/shttpd.reb
 
