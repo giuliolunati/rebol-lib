@@ -15,12 +15,14 @@ usr/lib/r3/html.reb \
 usr/lib/r3/lest.reb \
 usr/lib/r3/profile.reb \
 usr/lib/r3/recode.reb \
+usr/lib/r3/remark.reb \
 usr/lib/r3/rewrite.r \
 usr/lib/r3/shttpd.reb \
 usr/lib/r3/sl4a.reb \
 usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
+usr/share/scripts/remark-test.reb \
 usr/share/scripts/shttpd.reb
 
 ${DEB}: data.tar.gz control.tar.gz debian-binary
