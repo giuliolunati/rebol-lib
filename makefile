@@ -6,21 +6,21 @@ DEB = ${PACKAGE}_${VERSION}_${PLATFORM}.deb
 FILES = \
 usr \
 usr/bin \
-usr/bin/rebol3.sh \
 usr/bin/rebol.r \
+usr/bin/rebol3.sh \
 usr/lib \
 usr/lib/r3 \
-usr/lib/r3/rewrite.r \
+usr/lib/r3/altjson.reb \
+usr/lib/r3/html.reb \
 usr/lib/r3/lest.reb \
 usr/lib/r3/profile.reb \
-usr/lib/r3/altjson.reb \
 usr/lib/r3/recode.reb \
+usr/lib/r3/rewrite.r \
+usr/lib/r3/shttpd.reb \
 usr/lib/r3/sl4a.reb \
-usr/lib/r3/html.reb \
 usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
-usr/lib/r3/shttpd.reb \
 usr/share/scripts/shttpd.reb
 
 ${DEB}: data.tar.gz control.tar.gz debian-binary
@@ -42,15 +42,15 @@ debian-binary:
 control:
 	echo -e \
 	"Package: ${PACKAGE}\n\
-	Version: ${VERSION}\n\
+	 Version: ${VERSION}\n\
 	Description:" > $@
 
 .PHONY: sync
 sync:
 	@for o in ${FILES}; do \
 	  i=/$$o; \
-	  [ -f $$i ] || continue; \
-	  if [ $$i -nt $$o ]; then \
+		if [ -d $$i -o -d $$o ]; then continue; fi; \
+	  if [ ! -e $$o -o $$i -nt $$o ]; then \
 	    echo update '->' $$o '?'; \
 	    echo '[(yes) r(everse), n(o)]'; \
 	    read x; \
@@ -60,7 +60,7 @@ sync:
 	    *) cp -a $$i $$o ;; \
 	    esac; \
 	  else \
-	    if [ $$o -nt $$i ]; then \
+	    if [ ! -e $$i -o $$o -nt $$i ]; then \
 	      echo install '<-' $$o '?'; \
 	      echo '[(yes), r(everse), n(o)]';\
 	      read x; \
