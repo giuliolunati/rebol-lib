@@ -11,26 +11,25 @@ REBOL [
 html: object[
 	this: self
 	do: func[x] [lib/do bind/new x this]
-	tag2: function [
-		tag
-		x [string! block! refinement! issue! <...>]
+	emit: function [
+		tag [tag!]
+		:args [word!]
+		:look [word!]
 	][
-		open-tag: copy tag
+		args: get args
+		look: get look
 		class: id: _
+		open-tag: copy tag
+		close-tag: make tag! 8
+		either empty: #"/" = last tag
+		[ take/last open-tag  close-tag: make tag! 0 ]
+		[ close-tag: join </> to-string tag]
 		forever [
-			t: take x
+			t: take args
 			if string? t [t: reduce [t]]
 			if block? t [
 				t: reduce t
-				if id [ 
-					repend open-tag [ { id="} id {"}]
-				]
-				if class [
-					repend open-tag [ { class="} class {"}]
-				]
-				insert t open-tag
-				append t join </> to-string tag
-				return ajoin t
+				break
 			]
 			if refinement? t [
 				t: next to-string t
@@ -41,16 +40,28 @@ html: object[
 			]
 			if issue? t [id: to-string t]
 		]
+		if id [ 
+			repend open-tag [ { id="} id {"}]
+		]
+		if class [
+			repend open-tag [ { class="} class {"}]
+		]
+		if empty [append open-tag " /"]
+		ajoin [open-tag t close-tag]
 	]
-	def-tag2: func [tag] [
-		func [x [any-value! <...>]]
-		compose[tag2 (tag) x]
+	def-tag: func [tag] [
+		func [
+			args [any-string! issue! refinement! block! <...>]
+			:look [any-word! any-string! issue! refinement! block! <...>]
+		]
+		compose[emit (tag) args look]
 	]
-	b: def-tag2 <b>
-	body: def-tag2 <body>
-	i: def-tag2 <i>
-	p: def-tag2 <p>
-	div: def-tag2 <div>
+	b: def-tag <b>
+	body: def-tag <body>
+	i: def-tag <i>
+	p: def-tag <p>
+	div: def-tag <div>
+	br: def-tag <br/>
 ]
 
 ;; vim: set syn=rebol:
