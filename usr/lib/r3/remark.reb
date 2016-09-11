@@ -23,9 +23,18 @@ html: object[
 		close-tag: make tag! 8
 		either empty: #"/" = last tag
 		[ take/last open-tag  close-tag: make tag! 0 ]
-		[ close-tag: join </> to-string tag]
+		[ close-tag: join </> to-string tag ]
 		forever [
-			t: take args
+			t: first look
+			either all [
+				word? t
+				#"." = first to-string t
+			][
+				probe t: to-refinement next to-string t
+				take look
+			][
+				t: take args
+			]
 			if string? t [t: reduce [t]]
 			if block? t [
 				t: reduce t
