@@ -23,6 +23,7 @@ usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
 usr/share/scripts/remark-test.reb \
+usr/share/scripts/test-recode.reb \
 usr/share/scripts/shttpd.reb
 
 ${DEB}: data.tar.gz control.tar.gz debian-binary
