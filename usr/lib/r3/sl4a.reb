@@ -81,7 +81,7 @@ sync-write: func [sl4a-port [port!] JSON-string
 sys/make-scheme [
 	name: 'sl4a
 	title: "SL4A Protocol"
-	spec: make system/standard/port-spec-net [port-id: 4321 timeout: 5]
+	spec: make system/standard/port-spec-net [port-id: 4321 timeout: 60]
 
 	actor: [
 		open: func [
@@ -149,4 +149,4 @@ lib/browse: func [url] [sl4a view [url none none]]
 
 sl4a _authenticate get-env 'AP_HANDSHAKE
 
-; vim: set syn=rebol sw=2 ts=2 sts=2:
+comment[ vim: set sw=2 ts=2 sts=2: ]
