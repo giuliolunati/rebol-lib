@@ -1,14 +1,14 @@
 REBOL [
 	Title: "ReCode"
 	Purpose: "Write C code in Rebol-like syntax"
-	Name: 'recode
-	Type: 'module
+	Name: recode
+	Type: module
 	Exports: [ c-quote to-c indent+ indent- rebol-ext ]
 	Author: "giuliolunati@gmail.com"
 	Version: 0.1.0
 ]
 ;; FIND ERROR
-ok: none
+ok: _
 oks: make block! 16
 print-block-pos: func [
     x [block!]
@@ -35,12 +35,12 @@ find-err: function [
 	return code
 ]
 traces: function[ok] [
-	if none? ok [return none]
+	if blank? ok [return _]
 	p: head oks
 	forall p [
 		if (head p/1) != head ok [continue]
 		if (index? p/1) < index? ok [p/1: ok]
-		return none
+		return _
 	]
 	insert/only oks ok
 ]
@@ -124,6 +124,7 @@ to-c: function [
 		code [block!]
 	] [
 	clear stack push
+	np: 0
 
 	all!: bt[
 		'all into [
@@ -190,9 +191,9 @@ to-c: function [
 		)
 	]
 	name!: [
-		'none (emit "NULL")
+		'_ (emit "NULL")
 		| 'square-root (emit "sqrt")
-		| set t word! (emit t)
+		| set t word! (emit [t])
 	]
 	sequence!: bt[
 		and block! into[
@@ -289,7 +290,7 @@ to-c: function [
 rebol-ext: function [r [block!]] [
 	rebol-code: make block! 128
 	cases: make string! 128
-	n: 0 c: t: none 
+	n: 0 c: t: _ 
 	c-code: make string! 128
 	parse r [
 		copy t to 'REBOL (append c-code to-c t)
