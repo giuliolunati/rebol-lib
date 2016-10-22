@@ -190,6 +190,7 @@ send-answer: function [
 	data [block!] "http return code, mime-type, page-body"
 ][
 	set [code: type: body:] data
+	chunk: 32000
 	header: build-header code type
 	if config/verbose >= 2 [dump header]
 	if config/verbose >= 3 [
@@ -197,7 +198,10 @@ send-answer: function [
 		probe to-string body
 	]
 	write port header
-	write port body
+	until [
+		write port copy/part body chunk
+		tail? body: skip body chunk
+	]
 ]
 
 handle-request: function [
@@ -260,12 +264,11 @@ awake-server-dispatch: function [
 extend: proc [
 	"extend websy with the following definitions"
 	code [block!]
-	/set
+	/set "also add new set-words"
 ][
-	either set 
+	either set
 	[do bind/set code this]
 	[do bind code this]
-	do bind code this
 ]
 
 start: func [
@@ -284,4 +287,4 @@ stop: func [
 ][
 	close listen-port
 ]
-; vim: set syntax=rebol:
+;; vim: set syn=rebol:
