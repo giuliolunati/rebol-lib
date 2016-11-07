@@ -11,6 +11,7 @@ usr/bin/rebol3.sh \
 usr/lib \
 usr/lib/r3 \
 usr/lib/r3/altjson.reb \
+usr/lib/r3/customize.reb \
 usr/lib/r3/html.reb \
 usr/lib/r3/lest.reb \
 usr/lib/r3/profile.reb \
@@ -51,7 +52,7 @@ control:
 .PHONY: sync
 sync:
 	@for o in ${FILES}; do \
-	  i=/$$o; \
+	  i=$$ROOT/$$o; \
 		if [ -d $$i -o -d $$o ]; then continue; fi; \
 	  if [ ! -e $$o -o $$i -nt $$o ]; then \
 	    echo update '->' $$o '?'; \
@@ -79,7 +80,7 @@ sync:
 .PHONY: comp
 comp:
 	@for o in ${FILES}; do \
-	  i=/$$o; \
+	  i=$$ROOT/$$o; \
 	  [ -f $$i ] || continue; \
 	  if [ $$i -nt $$o ]; then \
 	    echo update '->' $$o; \
