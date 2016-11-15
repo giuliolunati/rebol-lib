@@ -9,7 +9,7 @@ REBOL [
 
 prefix-words: [
   make
-  form mold print probe
+  form mold ajoin print probe
   add subtract multiply divide
   absolute
 ]
@@ -44,6 +44,7 @@ indented-line: "^/"
 indent+: does [append indented-line "    "]
 indent-: does [loop 4 [take/last indented-line]]
 mold-stack: make block! 8
+
 mold-recur?: func [x] [
   for-each y mold-stack [
     if same? x y [return true]
@@ -55,8 +56,8 @@ form: func [
   value [<opt> any-value!]
   /delimit delimiter [blank! any-scalar! any-string! block!]
   /quote /new
-  r: frame:
-] [
+  r: frame: delim:
+  ] [
   frame: [value: value delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
   if r: attempt [apply :value/type/form frame]
   [return r]
@@ -66,14 +67,19 @@ form: func [
     either mold-recur? value [append r "..."]
     [
       append/only mold-stack value
-      forall value [
-        append r apply :form [value: value/1 delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
-        append r space
+      if all[new not quote] [value: reduce value]
+      delim: case [
+        not all [new delimit] [space]
+        block? delimiter [take delimiter]
+        true [delimiter]
       ]
-      take/last r
+      forall value [
+        if all [delim not head? value] [append r delim]
+        append r apply :form [value: value/1 delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
+      ]
       take/last mold-stack
     ]
-    r
+    return r
   ]
 
   if map? value [
@@ -113,7 +119,7 @@ mold: func [
   value [any-value!]
   /only /all /flat
   r: line: lines:
-] [
+  ] [
   if r: attempt [
     apply :value/type/mold [value: value only: only all: all flat: flat]
   ]
@@ -195,10 +201,51 @@ mold: func [
   apply :lib/mold [value: value only: only all: all flat: flat]
 ]
 
-print: adapt :lib/print [
-  unless error? lib/trap [
-    value/type/print value
-  ] [exit/from/with 2 void]
+ajoin: func [
+  block [block!]
+  /delimit delimiter
+  ] [
+  unless delimit [delimiter: _]
+  apply :form [
+    value: block new: true
+    delimit: true
+    delimiter: delimiter
+  ]
+]
+
+print: proc [
+  :lookup [any-value! <...>]
+  value [any-value! <...>]
+  /only
+  /delimit delimiter
+  /quote
+  /eval
+  l: v: 
+  ] [
+  l: first lookup
+  v: take value
+  if attempt [apply :value/type/print [
+    value: v eval: eval quote: quote delimit: delimit
+    if delimit [delimiter: delimiter]
+  ] ] [leave]
+
+  if all [block? v not block? l] [
+    lib/print v ; fail !!
+    leave
+  ]
+  
+  either only [
+    lib/print/only apply :form [
+      value: v new: true quote: quote
+      delimit: true delimiter: _
+    ]
+  ][
+    lib/print apply :form [
+      value: v new: true quote: quote
+      delimit: delimit
+      if delimit [delimiter: delimiter]
+    ]
+  ]
 ]
 
 probe: func [value [any-value!] /f] [
@@ -218,23 +265,23 @@ subtract: func [value1 value2] [any [
   attempt [value1/type/subtract value1 value2]
   attempt [value2/type/subtract value1 value2]
   lib/subtract value1 value2
-] ]
+]]
 
 multiply: func [value1 value2] [any [
   attempt [value1/type/multiply value1 value2]
   attempt [value2/type/multiply value1 value2]
   lib/multiply value1 value2
-] ]
+]]
 
 divide: func [value1 value2] [any [
   attempt [value1/type/divide value1 value2]
   attempt [value2/type/divide value1 value2]
   lib/divide value1 value2
-] ]
+]]
 
 absolute: func [value] [any [
   attempt [value/type/absolute value]
   lib/absolute value
-] ]
+]]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
