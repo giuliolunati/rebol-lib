@@ -256,32 +256,37 @@ probe: func [value [any-value!] /f] [
 ]
 
 add: func [value1 value2] [any [
+  attempt [lib/add value1 value2]
   attempt [value1/type/add value1 value2]
   attempt [value2/type/add value1 value2]
-  lib/add value1 value2
+  lib/add value1 value2 ;; raise error
 ]]
 
 subtract: func [value1 value2] [any [
+  attempt [lib/subtract value1 value2]
   attempt [value1/type/subtract value1 value2]
   attempt [value2/type/subtract value1 value2]
-  lib/subtract value1 value2
+  lib/subtract value1 value2 ;; raise error
 ]]
 
 multiply: func [value1 value2] [any [
+  attempt [lib/multiply value1 value2]
   attempt [value1/type/multiply value1 value2]
   attempt [value2/type/multiply value1 value2]
-  lib/multiply value1 value2
+  lib/multiply value1 value2 ;; raise error
 ]]
 
 divide: func [value1 value2] [any [
+  attempt [lib/divide value1 value2]
   attempt [value1/type/divide value1 value2]
   attempt [value2/type/divide value1 value2]
-  lib/divide value1 value2
+  lib/divide value1 value2 ;; raise error
 ]]
 
 absolute: func [value] [any [
+  attempt [lib/absolute value]
   attempt [value/type/absolute value]
-  lib/absolute value
+  lib/absolute value ;; raise error
 ]]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
