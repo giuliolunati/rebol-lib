@@ -89,9 +89,9 @@ sys/make-scheme [
 			/local tcp-port
 		] [
 			if sl4a-port/state [return sl4a-port]
-			if none? sl4a-port/spec/host [make-sl4a-error "Missing host address"]
+			if blank? sl4a-port/spec/host [make-sl4a-error "Missing host address"]
 			sl4a-port/state: context [
-				tcp-port: none
+				tcp-port: _
 			]
 			sl4a-port/state/tcp-port: tcp-port: make port! [
 				scheme: 'tcp
@@ -100,9 +100,9 @@ sys/make-scheme [
 				timeout: sl4a-port/spec/timeout
 				ref: rejoin [tcp:// host ":" port-id]
 				port-state: 'init
-				json: none
+				json: _
 			]
-			tcp-port/awake: none
+			tcp-port/awake: _
 			open tcp-port
 			sl4a-port
 		]
@@ -118,13 +118,20 @@ sys/make-scheme [
 		]
 		close: func [sl4a-port [port!]] [
 			close sl4a-port/state/tcp-port
-			sl4a-port/state: none
+			sl4a-port/state: _
 		]
 	]
 ]
-sl4a: function/with ['method params] [
+sl4a: function [
+  'method params
+  <static>
+  id (0)
+	client (open join sl4a:// [
+		get-env 'AP_HOST ":" get-env 'AP_PORT
+	])
+] [
 	id: id + 1
-	k: t: none
+	k: t: _
 	m: :method
 	i: id
 	p: either/only block? params
@@ -138,14 +145,9 @@ sl4a: function/with ['method params] [
 		params: p
 	] "^/"
 	load-json res
-] object [
-	id: 0
-	client: open join sl4a:// [
-		get-env 'AP_HOST ":" get-env 'AP_PORT
-	]
 ]
 
-lib/browse: func [url] [sl4a view [url none none]]
+lib/browse: func [url] [sl4a view [url _ _]]
 
 sl4a _authenticate get-env 'AP_HANDSHAKE
 
