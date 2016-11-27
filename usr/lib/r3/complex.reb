@@ -27,9 +27,9 @@ i: func [x r:] [
 
 make: func [def o:] [
   if complex? def [return def]
-  o: lib/make object! [
-    type: complex!
-    r: i: 0
+  o: lib/make map! reduce [
+    'type complex!
+    'r 0 'i 0
   ]
   case [
     number? def [o/r: def]
