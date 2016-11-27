@@ -11,6 +11,7 @@ usr/bin/rebol3.sh \
 usr/lib \
 usr/lib/r3 \
 usr/lib/r3/altjson.reb \
+usr/lib/r3/complex.reb \
 usr/lib/r3/customize.reb \
 usr/lib/r3/html.reb \
 usr/lib/r3/lest.reb \

@@ -1,154 +1,116 @@
 REBOL [
-	Title: "Complex utype"
-	Type: 'module
-	Name: 'complex
-	Exports: [
-		complex
-		complex?
-		complex!
-		i!
-	]
+	Title: "Complex numbers"
 	Author: "giuliolunati@gmail.com"
 	Version: 0.1.0
-	Note: "require utype! implementation as in https://github.com/giuliolunati/rebol/tree/utype"
-	Demo: %demo-complex.reb
+	Type: module
+	Name: 'complex
+  Exports: [complex! complex? complex i]
 ]
 
-complex: func[x] [to complex! x]
-complex?: func[x] [all[utype? x x/utype = 'complex!]]
-complex!: make utype! [
-	utype: 'complex!
-	re: im: 0
-	abs2: func[] [re * re + (im * im)]
-	arg: func[/radians /local r] [
-		either (absolute re) > absolute im
-		[r: arctangent im / re]
-		[r: 90 - arctangent re / im]
-		if im + re < 0 [r: r - 180]
-		if r + 180 <= 0 [r: r + 360]
-		either/only radians 
-			r / 180 * pi
-			r
-	]
-	conj: func[] [to complex! [re negate im]] ; conjugate
-	.methods: object [;; utype-methods
-		.absolute: func[a] [square-root a/abs2]
-		.add: func[a b /local r] [ any [
-			attempt[to complex! [
-				a/re + b/re a/im + b/im
-			] ]
-			(to complex! a) + (to complex! b)
-		] ]
-		.arccosine: func[x /radians /local r] [
-			r: x + square-root (x * x - 1)
-			r: i! * log-e r
-			either/only radians r r * 180 / pi
-		]
-		.arcsine: func[x /radians /local r] [
-			r: x + square-root (x * x - 1)
-			r: pi / 2 - (i! * log-e r)
-			either/only radians r r * 180 / pi
-		]
-		.arctangent: func[x /radians /local r] [
-			r: square-root (i! - x) / (i! + x)
-			r: negate i! * log-e r
-			either/only radians r r * 180 / pi
-		]
-		.cosine: func[x /radians /local e r] [
-			either radians [
-				e: exp x/im r: 1 / e 
-				to complex! [
-					(cosine/radians x/re) * (r + e) / 2 
-					(sine/radians x/re) * (r - e) / 2
-				]
-			] [ ; degrees
-				e: exp x/im * 0.017453292519943295 ; pi/180
-				r: 1 / e 
-				to complex! [
-					(cosine x/re) * (r + e) / 2 
-					(sine x/re) * (r - e) / 2
-				]
-			]
-		]
-		.divide: func[a b] [ any [
-			if number? b [complex[a/re / b a/im / b]]
-			a * b/conj / b/abs2
-		] ]
-		.exp: func[x] [
-			(to complex! [
-				cosine/radians x/im sine/radians x/im
-			]) * exp x/re
-		]
-		.form: func[x] [ ajoin[
-			either x/re = 0 [] [x/re] 
-			either x/im = 0 
-			[ either x/re = 0 [0] [] ]
-			[ ajoin[
-				either x/im > 0 ["+"] []
-				case [
-					x/im = 1 ["i"]
-					x/im = -1 ["-i"]
-					true ajoin[x/im "i"]
-				]
-			] ]
-		] ]
-		.log-e: func[x] [to complex! [
-			(log-e x/abs2) / 2
-			x/arg/radians
-		] ]
-		.mold: func[x] [
-			ajoin ["complex[" x/re #" " x/im #"]"]
-		]
-		.multiply: func[a b] [ any [
-			attempt [to complex![
-				a/re * b/re - (a/im * b/im)
-				a/im * b/re + (a/re * b/im)
-			] ]
-			(to complex! a) * (to complex! b)
-		] ]
-		.negate: func[x] [complex[negate x/re negate x/im]]
-		.sine: func[x /radians /local e r] [
-			either radians [
-				e: exp x/im r: 1 / e 
-				to complex! [
-					(sine/radians x/re) * (r + e) / 2
-					(cosine/radians x/re) * (e - r) / 2
-				]
-			] [ ; degrees
-				e: exp x/im * 0.017453292519943295 ; pi/180
-				r: 1 / e 
-				to complex! [
-					(sine x/re) * (r + e) / 2
-					(cosine x/re) * (e - r) / 2
-				]
-			]
-		]
-		.square-root: func[a] [exp (log-e a) / 2]
-		.subtract: func[a b] [any [
-			attempt [to complex! [a/re - b/re a/im - b/im]]
-			(to complex! a) - (to complex! b)
-		] ]
-		.tangent: func[x /radians] [
-			either radians [
-				(sine/radians x) / (cosine/radians x)
-			] [ ; degrees
-				(sine x) / (cosine x)
-			]
-		]
-		.to: func[x spec /local r] [
-			if complex? spec [return spec]
-			r: make complex! []
-			case [
-				block? spec [
-					spec: reduce spec
-					r/re: spec/1
-					r/im: spec/2
-				]
-				number? spec [r/re: spec]
-			]
-			r
-		]
-	]
+import 'customize
+
+complex!: self
+
+complex?: func [x] [
+  attempt [same? x/type complex!]
 ]
-i!: to complex![0 1]
+
+complex: func [r i] [make reduce [r i]]
+
+i: func [x r:] [
+  x: make x
+  r: x/r
+  x/r: negate x/i
+  x/i: r
+  x
+]
+
+make: func [def o:] [
+  if complex? def [return def]
+  o: lib/make object! [
+    type: complex!
+    r: i: 0
+  ]
+  case [
+    number? def [o/r: def]
+    block? def [o/r: def/1 o/i: def/2]
+    true [fail ajoin ["Cannot make complex! from " mold def] ]
+  ]
+  o
+]
+
+form: func [
+  value [<opt> any-value!]
+  /delimit delimiter [blank! any-scalar! any-string! block!]
+  /quote /new
+  r: frame:
+] [
+  delimiter: default " i "
+  ajoin either value/i < 0
+  [[value/r " -" delimiter 0 - value/i]]
+  [[value/r " +" delimiter value/i]]
+]
+
+mold: func [value /only /all /flat r:] [
+  lib/ajoin ["make complex! [" value/r space value/i "]"]
+]
+
+print: func [value] [
+  lib/print form value
+]
+
+add: func [v1 v2 v:] [
+  v1: make v1 v2: make v2
+  v: make reduce[
+    lib/add v1/r v2/r
+    lib/add v1/i v2/i
+  ]
+]
+
+subtract: func [v1 v2 v:] [
+  v1: make v1 v2: make v2
+  v: make reduce[
+    lib/subtract v1/r v2/r
+    lib/subtract v1/i v2/i
+  ]
+]
+
+multiply: func [v1 v2 v:] [
+  v1: make v1 v2: make v2
+  v: make reduce[
+    lib/subtract
+      lib/multiply v1/r v2/r
+      lib/multiply v1/i v2/i
+    lib/add
+      lib/multiply v1/r v2/i
+      lib/multiply v1/i v2/r
+  ]
+]
+
+divide: func [v1 v2 v: r2:] [
+  v1: make v1 v2: make v2
+  v: make reduce[
+    lib/add
+      lib/multiply v1/r v2/r
+      lib/multiply v1/i v2/i
+    lib/subtract
+      lib/multiply v1/i v2/r
+      lib/multiply v1/r v2/i
+  ]
+  r2: lib/add
+      lib/multiply v2/r v2/r
+      lib/multiply v2/i v2/i
+  v/r: lib/divide v/r r2
+  v/i: lib/divide v/i r2
+  v
+]
+
+absolute: func [v] [
+  lib/square-root lib/add
+    lib/multiply v/r v/r
+    lib/multiply v/i v/i
+]
+
+
+
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
