@@ -11,7 +11,7 @@ prefix-words: [
   make
   form mold ajoin print probe
   add subtract multiply divide
-  absolute
+  absolute negate
 ]
 op-pairs: [+ add - subtract * multiply / divide]
 alias-pairs: [abs absolute]
@@ -287,6 +287,12 @@ absolute: func [value] [any [
   attempt [lib/absolute value]
   attempt [value/type/absolute value]
   lib/absolute value ;; raise error
+]]
+
+negate: func [value] [any [
+  attempt [lib/negate value]
+  attempt [value/type/negate value]
+  lib/negate value ;; raise error
 ]]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
