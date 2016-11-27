@@ -1,0 +1,1 @@
+; vim: set syn=rebol ts=2 sw=2 sts=2:
