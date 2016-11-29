@@ -36,14 +36,14 @@ make: adapt :lib/make [
   ] [
     type: take type
     def: take def
-    exit/from/with 2 type/make def
+    exit/from/with 2 type/make type def
   ]
 ]
 
 indented-line: "^/"
 indent+: does [append indented-line "    "]
 indent-: does [loop 4 [take/last indented-line]]
-mold-stack: make block! 8
+mold-stack: lib/make block! 8
 
 mold-recur?: func [x] [
   for-each y mold-stack [

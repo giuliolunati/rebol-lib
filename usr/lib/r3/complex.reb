@@ -16,7 +16,7 @@ complex?: func [x] [
   [true] [false]
 ]
 
-make: func [def o:] [
+make: func [type def o:] [
   if complex? def [return def]
   o: lib/make map! reduce [
     'type complex!
@@ -30,20 +30,20 @@ make: func [def o:] [
   o
 ]
 
-i: make [0 1]
+i: make complex! [0 1]
 
 +i: enfix func [
   v1 [<tight> any-number!]
   v2 [<tight> any-number!]
 ] [
-  make reduce [v1 v2]
+  make complex! reduce [v1 v2]
 ]
 
 -i: enfix func [
   v1 [<tight> any-number!]
   v2 [<tight> any-number!]
 ] [
-  make reduce [v1 negate v2]
+  make complex! reduce [v1 negate v2]
 ]
 
 form: func [
@@ -66,24 +66,24 @@ print: func [value] [
 ]
 
 add: func [v1 v2 v:] [
-  v1: make v1 v2: make v2
-  v: make reduce[
+  v1: make complex! v1 v2: make complex! v2
+  v: make complex! reduce[
     lib/add v1/r v2/r
     lib/add v1/i v2/i
   ]
 ]
 
 subtract: func [v1 v2 v:] [
-  v1: make v1 v2: make v2
-  v: make reduce[
+  v1: make complex! v1 v2: make complex! v2
+  v: make complex! reduce[
     lib/subtract v1/r v2/r
     lib/subtract v1/i v2/i
   ]
 ]
 
 multiply: func [v1 v2 v:] [
-  v1: make v1 v2: make v2
-  v: make reduce[
+  v1: make complex! v1 v2: make complex! v2
+  v: make complex! reduce[
     lib/subtract
       lib/multiply v1/r v2/r
       lib/multiply v1/i v2/i
@@ -94,8 +94,8 @@ multiply: func [v1 v2 v:] [
 ]
 
 divide: func [v1 v2 v: r2:] [
-  v1: make v1 v2: make v2
-  v: make reduce[
+  v1: make complex! v1 v2: make complex! v2
+  v: make complex! reduce[
     lib/add
       lib/multiply v1/r v2/r
       lib/multiply v1/i v2/i
