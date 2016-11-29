@@ -4,7 +4,7 @@ REBOL [
 	Version: 0.1.0
 	Type: module
 	Name: 'complex
-  Exports: [complex! complex? complex i]
+  Exports: [complex! complex? i +i -i]
 ]
 
 import 'customize
@@ -12,17 +12,8 @@ import 'customize
 complex!: self
 
 complex?: func [x] [
-  attempt [same? x/type complex!]
-]
-
-complex: func [r i] [make reduce [r i]]
-
-i: func [x r:] [
-  x: make x
-  r: x/r
-  x/r: negate x/i
-  x/i: r
-  x
+  either attempt [same? x/type complex!]
+  [true] [false]
 ]
 
 make: func [def o:] [
@@ -39,16 +30,31 @@ make: func [def o:] [
   o
 ]
 
+i: make [0 1]
+
++i: enfix func [
+  v1 [<tight> any-number!]
+  v2 [<tight> any-number!]
+] [
+  make reduce [v1 v2]
+]
+
+-i: enfix func [
+  v1 [<tight> any-number!]
+  v2 [<tight> any-number!]
+] [
+  make reduce [v1 negate v2]
+]
+
 form: func [
   value [<opt> any-value!]
   /delimit delimiter [blank! any-scalar! any-string! block!]
   /quote /new
   r: frame:
 ] [
-  delimiter: default " i "
   ajoin either value/i < 0
-  [[value/r " -" delimiter 0 - value/i]]
-  [[value/r " +" delimiter value/i]]
+  [[value/r " -i " negate value/i]]
+  [[value/r " +i " value/i]]
 ]
 
 mold: func [value /only /all /flat r:] [
@@ -110,7 +116,4 @@ absolute: func [v] [
     lib/multiply v/r v/r
     lib/multiply v/i v/i
 ]
-
-
-
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
