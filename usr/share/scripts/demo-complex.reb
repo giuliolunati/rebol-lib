@@ -39,16 +39,20 @@ demo [
   that needs to be enabled:}
   (enable-customize self)
   _
-  "You can make complex value with MAKE ..."
+  "Make complex value with MAKE ..."
 	[a: make complex! [1 2]]
   {... or "literally":}
   [mold b: 2 +i 1]
   [mold c: 2 -i 3]
   _
-  "'i is imaginary unit: "
+  "NOTE: 'i is imaginary unit: "
   [i]
   _
-  "You can test a value with 'complex? :"
+  "Convert to BLOCK!  or to STRING!:"
+  [mold to block! a]
+  [mold to string! a]
+  _
+  "Test a value with 'complex? :"
   [complex? b] [complex? 3.1]
   _
   "Some arithmetics:"

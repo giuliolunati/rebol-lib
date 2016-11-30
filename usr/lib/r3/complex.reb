@@ -17,17 +17,28 @@ complex?: func [x] [
 ]
 
 make: func [type def o:] [
-  if complex? def [return def]
-  o: lib/make map! reduce [
-    'type complex!
-    'r 0 'i 0
+  if type = complex! [ ;; MAKE
+    if complex? def [return copy def]
+    o: lib/make map! reduce [
+      'type complex!
+      'r 0 'i 0
+    ]
+    case [
+      number? def [o/r: def]
+      block? def [o/r: def/1 o/i: def/2]
+      true [
+      fail/where ajoin [
+        "Cannot make complex! from " lib/mold def
+      ] backtrace 5]
+    ]
+    return o
   ]
-  case [
-    number? def [o/r: def]
-    block? def [o/r: def/1 o/i: def/2]
-    true [fail ajoin ["Cannot make complex! from " mold def] ]
+  assert [complex? def] ;; TO
+  switch type [
+    :block! [return reduce [def/r def/i]]
+    :string! [return form def]
   ]
-  o
+  fail/where ajoin ["Cannot convert complex! to " type] backtrace 3
 ]
 
 i: make complex! [0 1]
