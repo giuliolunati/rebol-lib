@@ -8,7 +8,7 @@ REBOL [
 ]
 
 prefix-words: [
-  make
+  make to
   form mold ajoin print probe
   add subtract multiply divide
   absolute negate
@@ -37,6 +37,15 @@ make: adapt :lib/make [
     type: take type
     def: take def
     exit/from/with 2 type/make type def
+  ]
+]
+
+to: adapt :lib/to [
+  if all [
+    any [module? value map? value object? value]
+    any-function? :value/type/make
+  ][
+    exit/from/with 2 value/type/make type value
   ]
 ]
 
