@@ -9,17 +9,17 @@ REBOL [
 
 import 'customize
 
-complex!: self
+complex!: make map! 8
 
 complex?: func [x] [
   either attempt [same? x/type complex!]
   [true] [false]
 ]
 
-make: func [type def o: t:] [
-  if type = complex! [ ;; MAKE
+complex!/make: complex-make: func [type def o: t:] [
+  if same? type complex! [ ;; MAKE
     if complex? def [return copy def]
-    o: lib/make map! reduce [
+    o: make map! reduce [
       'type complex!
       'r 0 'i 0
     ]
@@ -36,34 +36,34 @@ make: func [type def o: t:] [
       ]
     ]
     fail/where ajoin [
-      "Cannot make complex! from " lib/mold def
+      "Cannot make complex! from " mold def
     ] backtrace 4
   ]
   assert [complex? def] ;; TO
   switch type [
     :block! [return reduce [def/r def/i]]
-    :string! [return form def]
+    :string! [return complex-form def]
   ]
   fail/where ajoin ["Cannot convert complex! to " type] backtrace 3
 ]
 
-i: make complex! [0 1]
+i: complex-make complex! [0 1]
 
 +i: enfix func [
   v1 [<tight> any-number!]
   v2 [<tight> any-number!]
 ] [
-  make complex! reduce [v1 v2]
+  complex-make complex! reduce [v1 v2]
 ]
 
 -i: enfix func [
   v1 [<tight> any-number!]
   v2 [<tight> any-number!]
 ] [
-  make complex! reduce [v1 negate v2]
+  complex-make complex! reduce [v1 negate v2]
 ]
 
-form: func [
+complex!/form: complex-form: func [
   value [<opt> any-value!]
   /delimit delimiter [blank! any-scalar! any-string! block!]
   /quote /new
@@ -74,63 +74,63 @@ form: func [
   [[value/r "+i" value/i]]
 ]
 
-mold: func [value /only /all /flat r:] [
+complex!/mold: func [value /only /all /flat r:] [
   lib/ajoin ["make complex! [" value/r space value/i "]"]
 ]
 
-print: func [value] [
-  lib/print form value
+complex!/print: func [value] [
+  print complex-form value
 ]
 
-add: func [v1 v2 v:] [
-  v1: make complex! v1 v2: make complex! v2
-  v: make complex! reduce[
-    lib/add v1/r v2/r
-    lib/add v1/i v2/i
+complex!/add: func [v1 v2 v:] [
+  v1: complex-make complex! v1 v2: complex-make complex! v2
+  v: complex-make complex! reduce[
+    add v1/r v2/r
+    add v1/i v2/i
   ]
 ]
 
-subtract: func [v1 v2 v:] [
-  v1: make complex! v1 v2: make complex! v2
-  v: make complex! reduce[
-    lib/subtract v1/r v2/r
-    lib/subtract v1/i v2/i
+complex!/subtract: func [v1 v2 v:] [
+  v1: complex-make complex! v1 v2: complex-make complex! v2
+  v: complex-make complex! reduce[
+    subtract v1/r v2/r
+    subtract v1/i v2/i
   ]
 ]
 
-multiply: func [v1 v2 v:] [
-  v1: make complex! v1 v2: make complex! v2
-  v: make complex! reduce[
-    lib/subtract
-      lib/multiply v1/r v2/r
-      lib/multiply v1/i v2/i
-    lib/add
-      lib/multiply v1/r v2/i
-      lib/multiply v1/i v2/r
+complex!/multiply: func [v1 v2 v:] [
+  v1: complex-make complex! v1 v2: complex-make complex! v2
+  v: complex-make complex! reduce[
+    subtract
+      multiply v1/r v2/r
+      multiply v1/i v2/i
+    add
+      multiply v1/r v2/i
+      multiply v1/i v2/r
   ]
 ]
 
-divide: func [v1 v2 v: r2:] [
-  v1: make complex! v1 v2: make complex! v2
-  v: make complex! reduce[
-    lib/add
-      lib/multiply v1/r v2/r
-      lib/multiply v1/i v2/i
-    lib/subtract
-      lib/multiply v1/i v2/r
-      lib/multiply v1/r v2/i
+complex!/divide: func [v1 v2 v: r2:] [
+  v1: complex-make complex! v1 v2: complex-make complex! v2
+  v: complex-make complex! reduce[
+    add
+      multiply v1/r v2/r
+      multiply v1/i v2/i
+    subtract
+      multiply v1/i v2/r
+      multiply v1/r v2/i
   ]
-  r2: lib/add
-      lib/multiply v2/r v2/r
-      lib/multiply v2/i v2/i
-  v/r: lib/divide v/r r2
-  v/i: lib/divide v/i r2
+  r2: add
+      multiply v2/r v2/r
+      multiply v2/i v2/i
+  v/r: divide v/r r2
+  v/i: divide v/i r2
   v
 ]
 
-absolute: func [v] [
-  lib/square-root lib/add
-    lib/multiply v/r v/r
-    lib/multiply v/i v/i
+complex!/absolute: func [v] [
+  square-root add
+    multiply v/r v/r
+    multiply v/i v/i
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
