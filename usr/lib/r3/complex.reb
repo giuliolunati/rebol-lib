@@ -16,7 +16,7 @@ complex?: func [x] [
   [true] [false]
 ]
 
-make: func [type def o:] [
+make: func [type def o: t:] [
   if type = complex! [ ;; MAKE
     if complex? def [return copy def]
     o: lib/make map! reduce [
@@ -24,14 +24,20 @@ make: func [type def o:] [
       'r 0 'i 0
     ]
     case [
-      number? def [o/r: def]
-      block? def [o/r: def/1 o/i: def/2]
-      true [
-      fail/where ajoin [
-        "Cannot make complex! from " lib/mold def
-      ] backtrace 5]
+      number? def [o/r: def return o]
+      block? def [o/r: def/1 o/i: def/2 return o]
+      string? def [
+        if attempt [
+          t: split def #"i"
+          insert t/2 take/last t/1
+          o/r: to-decimal t/1
+          o/i: to-decimal t/2
+        ] return o
+      ]
     ]
-    return o
+    fail/where ajoin [
+      "Cannot make complex! from " lib/mold def
+    ] backtrace 4
   ]
   assert [complex? def] ;; TO
   switch type [
@@ -64,8 +70,8 @@ form: func [
   r: frame:
 ] [
   ajoin either value/i < 0
-  [[value/r " -i " negate value/i]]
-  [[value/r " +i " value/i]]
+  [[value/r "-i" negate value/i]]
+  [[value/r "+i" value/i]]
 ]
 
 mold: func [value /only /all /flat r:] [

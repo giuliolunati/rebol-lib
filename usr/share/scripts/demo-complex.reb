@@ -39,16 +39,20 @@ demo [
   that needs to be enabled:}
   (enable-customize self)
   _
-  "Make complex value with MAKE ..."
+  {Make complex value with MAKE
+  from number, block or string: ...}
+	[make complex! 3]
 	[a: make complex! [1 2]]
-  {... or "literally":}
-  [mold b: 2 +i 1]
-  [mold c: 2 -i 3]
+	[make complex! "1-i2"]
+  _
+  {... or with '+i and '-i operators:}
+  [b: 2 +i 1]
+  [c: 2 -i 3]
   _
   "NOTE: 'i is imaginary unit: "
   [i]
   _
-  "Convert to BLOCK!  or to STRING!:"
+  "Convert to BLOCK! or to STRING!:"
   [mold to block! a]
   [mold to string! a]
   _
@@ -56,7 +60,10 @@ demo [
   [complex? b] [complex? 3.1]
   _
   "Some arithmetics:"
-  [a] [b]  [a + b] [a - b] [a * b] [a / b]
+  [[a "," b]]  [a + b] [a - b] [a * b] [a / b]
+  _
+  "Also mixed with real numbers:"
+  [2 +i 3 * 2] [1 / (1 -i 2)]
 ][
 	"^/FORM & MOLD:"
 	[form reduce [a b]]
