@@ -35,9 +35,9 @@ demo [
   "First of all, import:"
   (import 'complex)
   _
-  {NOTE: 'complex module is based on 'customize, 
+  {NOTE: 'complex module is based on 'custom, 
   that needs to be enabled:}
-  (enable-customize self)
+  (customize self)
   _
   {Make complex value with MAKE
   from number, block or string: ...}

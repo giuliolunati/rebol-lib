@@ -7,12 +7,12 @@ REBOL [
   Exports: [complex! complex? i +i -i]
 ]
 
-import 'customize
+import 'custom
 
 complex!: make map! 8
 
 complex?: func [x] [
-  either attempt [same? x/type complex!]
+  either attempt [same? x/custom-type complex!]
   [true] [false]
 ]
 
@@ -20,7 +20,7 @@ complex!/make: complex-make: func [type def o: t:] [
   if same? type complex! [ ;; MAKE
     if complex? def [return copy def]
     o: make map! reduce [
-      'type complex!
+      'custom-type complex!
       'r 0 'i 0
     ]
     case [
@@ -156,14 +156,14 @@ complex!/log-e: func [z o:] [
   unless o/r: log-e complex-abs z [
     make error! _
   ]
-  o/type: complex!
+  o/custom-type: complex!
   o/i: atan2 z/i z/r
   o
 ]
 
 complex!/exp: func [z o: r:] [
   o: make map! 3
-  o/type: complex!
+  o/custom-type: complex!
   r: exp z/r
   o/i: r * sine/radians z/i
   o/r: r * cosine/radians z/i

@@ -1,53 +1,10 @@
 REBOL [
-	Title: "Custom Types"
+	Title: "Customize functions"
 	Author: "giuliolunati@gmail.com"
 	Version: 0.1.0
 	Type: module
-	Name: 'customize
-  Exports: [enable-customize]
-]
-
-prefix-words: [
-  make to
-  form mold ajoin print probe
-  add subtract multiply divide
-  absolute negate
-  log-e exp
-]
-op-pairs: [+ add - subtract * multiply / divide]
-alias-pairs: [abs absolute log log-e]
-
-enable-customize: proc ['where f:] [
-  foreach w bind prefix-words where [
-    set w :self/:w
-  ]
-  foreach [o p] bind op-pairs where [
-    set/lookback o tighten get :p
-  ]
-  foreach [a b] bind alias-pairs where [
-    set a get :b
-  ]
-]
-
-make: adapt :lib/make [
-  if any [
-    module? get first lookahead
-    map?  get first lookahead
-    object?  get first lookahead
-  ] [
-    type: take type
-    def: take def
-    exit/from/with 2 type/make type def
-  ]
-]
-
-to: adapt :lib/to [
-  if all [
-    any [module? value map? value object? value]
-    any-function? :value/type/make
-  ][
-    exit/from/with 2 value/type/make type value
-  ]
+	Name: 'custom
+  Exports: [custom customize]
 ]
 
 indented-line: "^/"
@@ -62,6 +19,29 @@ mold-recur?: func [x] [
   false
 ]
 
+custom-type?: func [x] [
+  all [map? x any-function? :x/make]
+]
+
+custom: make object! [
+
+make: adapt :lib/make [
+  if custom-type? get first lookahead [
+    type: take type
+    def: take def
+    exit/from/with 2 type/make type def
+  ]
+]
+
+to: adapt :lib/to [
+  if all [
+    map? value
+    custom-type? :value/custom-type
+  ][
+    exit/from/with 2 value/custom-type/make type value
+  ]
+]
+
 form: func [
   value [<opt> any-value!]
   /delimit delimiter [blank! any-scalar! any-string! block!]
@@ -69,7 +49,7 @@ form: func [
   r: frame: delim:
   ] [
   frame: [value: value delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
-  if r: attempt [apply :value/type/form frame]
+  if r: attempt [apply :value/custom-type/form frame]
   [return r]
 
   if any[block? value group? value] [
@@ -131,7 +111,7 @@ mold: func [
   r: line: lines:
   ] [
   if r: attempt [
-    apply :value/type/mold [value: value only: only all: all flat: flat]
+    apply :value/custom-type/mold [value: value only: only all: all flat: flat]
   ]
   [return r]
 
@@ -234,7 +214,7 @@ print: proc [
   ] [
   l: first lookup
   v: take value
-  if attempt [apply :value/type/print [
+  if attempt [apply :value/custom-type/print [
     value: v eval: eval quote: quote delimit: delimit
     if delimit [delimiter: delimiter]
   ] ] [leave]
@@ -258,63 +238,80 @@ print: proc [
   ]
 ]
 
-probe: func [value [any-value!] /f] [
+probe: func [value [any-value!] /form] [
   lib/print either f
-  [form :value]
+  [custom/form :value]
   [mold :value]
   :value
 ]
 
 add: func [value1 value2] [any [
   attempt [lib/add value1 value2]
-  attempt [value1/type/add value1 value2]
-  attempt [value2/type/add value1 value2]
+  attempt [value1/custom-type/add value1 value2]
+  attempt [value2/custom-type/add value1 value2]
   lib/add value1 value2 ;; raise error
 ]]
 
 subtract: func [value1 value2] [any [
   attempt [lib/subtract value1 value2]
-  attempt [value1/type/subtract value1 value2]
-  attempt [value2/type/subtract value1 value2]
+  attempt [value1/custom-type/subtract value1 value2]
+  attempt [value2/custom-type/subtract value1 value2]
   lib/subtract value1 value2 ;; raise error
 ]]
 
 multiply: func [value1 value2] [any [
   attempt [lib/multiply value1 value2]
-  attempt [value1/type/multiply value1 value2]
-  attempt [value2/type/multiply value1 value2]
+  attempt [value1/custom-type/multiply value1 value2]
+  attempt [value2/custom-type/multiply value1 value2]
   lib/multiply value1 value2 ;; raise error
 ]]
 
 divide: func [value1 value2] [any [
   attempt [lib/divide value1 value2]
-  attempt [value1/type/divide value1 value2]
-  attempt [value2/type/divide value1 value2]
+  attempt [value1/custom-type/divide value1 value2]
+  attempt [value2/custom-type/divide value1 value2]
   lib/divide value1 value2 ;; raise error
 ]]
 
 absolute: func [value] [any [
   attempt [lib/absolute value]
-  attempt [value/type/absolute value]
+  attempt [value/custom-type/absolute value]
   lib/absolute value ;; raise error
 ]]
 
 negate: func [value] [any [
   attempt [lib/negate value]
-  attempt [value/type/negate value]
+  attempt [value/custom-type/negate value]
   lib/negate value ;; raise error
 ]]
 
 log-e: func [value f:] [any [
   attempt [lib/log-e value]
-  attempt [value/type/log-e value]
+  attempt [value/custom-type/log-e value]
   fail/where ajoin ["Invalid parameter for log: " form value] 'value
 ]]
 
 exp: func [value] [any [
   attempt [lib/exp value]
-  attempt [value/type/exp value]
+  attempt [value/custom-type/exp value]
   lib/exp value ;; raise error
 ]]
+
+] ; custom object
+
+infix-alias: [+ add - subtract * multiply / divide]
+prefix-alias: [abs absolute log log-e]
+
+customize: proc ['where f:] [
+  foreach w bind words-of custom where [
+    set w :custom/:w
+  ]
+  foreach [o p] bind infix-alias where [
+    set/lookback o tighten :custom/:p
+  ]
+  foreach [a b] bind prefix-alias where [
+    set a :custom/:b
+  ]
+]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
