@@ -64,43 +64,11 @@ demo [
   _
   "Also mixed with real numbers:"
   [2 +i 3 * 2] [1 / (1 -i 2)]
-][
-	"^/FORM & MOLD:"
-	[form reduce [a b]]
-	[mold/only reduce [a b]]
-	"^/ARITHMETICS:"
-	[c: a + 2]
-	[2 + a]
-	[c - 2]
-	[2 - c]
-	[c: a + b]
-	[c - b]
-	[c: a * 2]
-	[2 * a]
-	[c / 2]
-	[c: 2 / a]
-	[c * a]
-	[c: a * b]
-	[c / b]
-	"^/FUNCTIONS:"
-	[c: a/arg]
-	[a/arg/radians]
-	[tangent c]
-	[a/abs2]
-	[c: absolute a]
-	[c * c]
-	[c: exp a]
-	[log-e c]
-	[c: square-root a]
-	[c * c]
-	[b: cosine a]
-	[c: sine a]
-	[b * b + (c * c)]
-	[a: 1 + i!]
-	[b: arccosine a]
-	[c: arcsine a]
-	[b + c]
-	[b: tangent complex[5 7]]
-	[arctangent b]
+  _
+  "Logarithm and exponential:"
+  [y: log (-1 +i 0)]
+  [exp y]
+  [y: exp (3 +i (2 * pi + 1))]
+  [log y]
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

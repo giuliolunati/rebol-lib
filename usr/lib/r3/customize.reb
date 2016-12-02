@@ -12,9 +12,10 @@ prefix-words: [
   form mold ajoin print probe
   add subtract multiply divide
   absolute negate
+  log-e exp
 ]
 op-pairs: [+ add - subtract * multiply / divide]
-alias-pairs: [abs absolute]
+alias-pairs: [abs absolute log log-e]
 
 enable-customize: proc ['where f:] [
   foreach w bind prefix-words where [
@@ -302,6 +303,18 @@ negate: func [value] [any [
   attempt [lib/negate value]
   attempt [value/type/negate value]
   lib/negate value ;; raise error
+]]
+
+log-e: func [value f:] [any [
+  attempt [lib/log-e value]
+  attempt [value/type/log-e value]
+  fail/where ajoin ["Invalid parameter for log: " form value] 'value
+]]
+
+exp: func [value] [any [
+  attempt [lib/exp value]
+  attempt [value/type/exp value]
+  lib/exp value ;; raise error
 ]]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

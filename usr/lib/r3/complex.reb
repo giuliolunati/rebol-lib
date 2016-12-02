@@ -128,9 +128,45 @@ complex!/divide: func [v1 v2 v: r2:] [
   v
 ]
 
-complex!/absolute: func [v] [
+complex!/absolute: complex-abs: func [v] [
   square-root add
     multiply v/r v/r
     multiply v/i v/i
+]
+
+atan2: func [y x a:] [
+  either (absolute x) >= (absolute y) [
+    if zero? x [return 0]
+    a: arctangent/radians (y / x)
+  ][
+    a: (pi / 2) - arctangent/radians (x / y)
+  ]
+  if x + y < 0 [a: a - pi]
+  if all [x + y = 0  x < 0] [a: a + pi]
+  if a + pi <= 0 [a: a + pi + pi]
+  a
+]
+
+angle: func [z] [
+  atan2 z/i z/r
+]
+
+complex!/log-e: func [z o:] [
+  o: make map! 3
+  unless o/r: log-e complex-abs z [
+    make error! _
+  ]
+  o/type: complex!
+  o/i: atan2 z/i z/r
+  o
+]
+
+complex!/exp: func [z o: r:] [
+  o: make map! 3
+  o/type: complex!
+  r: exp z/r
+  o/i: r * sine/radians z/i
+  o/r: r * cosine/radians z/i
+  o
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
