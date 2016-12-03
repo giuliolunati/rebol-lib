@@ -23,6 +23,38 @@ custom-type?: func [x] [
   all [map? x any-function? :x/make]
 ]
 
+fail-invalid-parameter: func [
+  func-name [string! word!]
+  params [block! word!]
+] [
+  either word? params [
+    fail/where ajoin [
+      "Invalid parameter for " func-name ": "
+      custom/form get params
+    ] params
+  ] [
+    fail/where ajoin [
+      "Invalid parameters for " func-name ": "
+      map-each x params [custom/form get x]
+    ] params/1
+  ]
+]
+
+infix-alias: [+ add - subtract * multiply / divide]
+prefix-alias: [abs absolute log log-e]
+
+customize: proc ['where f:] [
+  foreach w bind words-of custom where [
+    set w :custom/:w
+  ]
+  foreach [o p] bind infix-alias where [
+    set/lookback o tighten :custom/:p
+  ]
+  foreach [a b] bind prefix-alias where [
+    set a :custom/:b
+  ]
+]
+
 custom: make object! [
 
 make: adapt :lib/make [
@@ -249,69 +281,54 @@ add: func [value1 value2] [any [
   attempt [lib/add value1 value2]
   attempt [value1/custom-type/add value1 value2]
   attempt [value2/custom-type/add value1 value2]
-  lib/add value1 value2 ;; raise error
+  fail-invalid-parameter 'add [value1 value2]
 ]]
 
 subtract: func [value1 value2] [any [
   attempt [lib/subtract value1 value2]
   attempt [value1/custom-type/subtract value1 value2]
   attempt [value2/custom-type/subtract value1 value2]
-  lib/subtract value1 value2 ;; raise error
+  fail-invalid-parameter 'subtract [value1 value2]
 ]]
 
 multiply: func [value1 value2] [any [
   attempt [lib/multiply value1 value2]
   attempt [value1/custom-type/multiply value1 value2]
   attempt [value2/custom-type/multiply value1 value2]
-  lib/multiply value1 value2 ;; raise error
+  fail-invalid-parameter 'multiply [value1 value2]
 ]]
 
 divide: func [value1 value2] [any [
   attempt [lib/divide value1 value2]
   attempt [value1/custom-type/divide value1 value2]
   attempt [value2/custom-type/divide value1 value2]
-  lib/divide value1 value2 ;; raise error
+  fail-invalid-parameter 'divide [value1 value2]
 ]]
 
 absolute: func [value] [any [
   attempt [lib/absolute value]
   attempt [value/custom-type/absolute value]
-  lib/absolute value ;; raise error
+  fail-invalid-parameter 'absolute 'value
 ]]
 
 negate: func [value] [any [
   attempt [lib/negate value]
   attempt [value/custom-type/negate value]
-  lib/negate value ;; raise error
+  fail-invalid-parameter 'negate 'value
 ]]
 
 log-e: func [value f:] [any [
   attempt [lib/log-e value]
   attempt [value/custom-type/log-e value]
-  fail/where ajoin ["Invalid parameter for log: " form value] 'value
+  fail-invalid-parameter 'log 'value
 ]]
 
 exp: func [value] [any [
   attempt [lib/exp value]
   attempt [value/custom-type/exp value]
-  lib/exp value ;; raise error
+  fail-invalid-parameter 'exp 'value
 ]]
 
 ] ; custom object
-
-infix-alias: [+ add - subtract * multiply / divide]
-prefix-alias: [abs absolute log log-e]
-
-customize: proc ['where f:] [
-  foreach w bind words-of custom where [
-    set w :custom/:w
-  ]
-  foreach [o p] bind infix-alias where [
-    set/lookback o tighten :custom/:p
-  ]
-  foreach [a b] bind prefix-alias where [
-    set a :custom/:b
-  ]
-]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
