@@ -98,7 +98,7 @@ complex!/subtract: func [v1 v2 v:] [
   ]
 ]
 
-complex!/multiply: func [v1 v2 v:] [
+complex!/multiply: complex-mul: func [v1 v2 v:] [
   v1: complex-make complex! v1 v2: complex-make complex! v2
   v: complex-make complex! reduce[
     subtract
@@ -110,7 +110,7 @@ complex!/multiply: func [v1 v2 v:] [
   ]
 ]
 
-complex!/divide: func [v1 v2 v: r2:] [
+complex!/divide: complex-div: func [v1 v2 v: r2:] [
   v1: complex-make complex! v1 v2: complex-make complex! v2
   v: complex-make complex! reduce[
     add
@@ -151,7 +151,7 @@ angle: func [z] [
   atan2 z/i z/r
 ]
 
-complex!/log-e: func [z o:] [
+complex!/log-e: complex-log: func [z o:] [
   o: make map! 3
   unless o/r: log-e complex-abs z [
     make error! _
@@ -161,12 +161,41 @@ complex!/log-e: func [z o:] [
   o
 ]
 
-complex!/exp: func [z o: r:] [
+complex!/exp: complex-exp: func [z o: r:] [
   o: make map! 3
   o/custom-type: complex!
   r: exp z/r
   o/i: r * sine/radians z/i
   o/r: r * cosine/radians z/i
+  o
+]
+
+complex!/power: func [z k r:] [
+  if all [integer? k  k > 0] [
+    r: 1 
+    while [k > 0] [
+      if odd? k [-- k r: complex-mul r z]
+      k: k / 2
+      z: complex-mul z z
+    ]
+    return r
+  ]
+  z: complex-make complex! z
+  k: complex-make complex! k
+  if all [zero? z/r  zero? z/i] [
+    if k/r > 0 [return 0]
+    return make error! _
+  ]
+  complex-exp complex-mul k complex-log z
+]
+
+complex!/square-root: func [z o: r: a:] [
+  r: square-root complex-abs z
+  a: (angle z) / 2
+  o: make map! 3
+  o/custom-type: complex!
+  o/i: r * sine/radians a
+  o/r: r * cosine/radians a
   o
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

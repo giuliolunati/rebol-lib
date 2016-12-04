@@ -40,9 +40,6 @@ fail-invalid-parameter: func [
   ]
 ]
 
-infix-alias: [+ add - subtract * multiply / divide]
-prefix-alias: [abs absolute log log-e]
-
 customize: proc ['where f:] [
   foreach w bind words-of custom where [
     set w :custom/:w
@@ -329,6 +326,22 @@ exp: func [value] [any [
   fail-invalid-parameter 'exp 'value
 ]]
 
+power: func [number exponent] [any [
+  attempt [lib/power number exponent]
+  attempt [number/custom-type/power number exponent]
+  attempt [exponent/custom-type/power number exponent]
+  fail-invalid-parameter 'power [number exponent]
+]]
+
+square-root: func [value] [any [
+  attempt [lib/square-root value]
+  attempt [value/custom-type/square-root value]
+  fail-invalid-parameter 'square-root 'value
+]]
+
 ] ; custom object
+
+infix-alias: [+ add  - subtract  * multiply  / divide   ** power]
+prefix-alias: [abs absolute  log log-e  sqrt square-root]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
