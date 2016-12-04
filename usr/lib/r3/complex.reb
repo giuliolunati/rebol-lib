@@ -4,7 +4,7 @@ REBOL [
 	Version: 0.1.0
 	Type: module
 	Name: 'complex
-  Exports: [complex! complex? i +i -i]
+  Exports: [complex! complex? to-complex i +i -i]
 ]
 
 import 'custom
@@ -16,28 +16,33 @@ complex?: func [x] [
   [true] [false]
 ]
 
-complex!/make: complex-make: func [type def o: t:] [
+to-complex: func [def o: t:] [
+  if complex? def [return def]
+  o: make map! reduce [
+    'custom-type complex!
+    'r 0 'i 0
+  ]
+  case [
+    number? def [o/r: def return o]
+    block? def [o/r: def/1 o/i: def/2 return o]
+    string? def [
+      if attempt [
+        t: split def #"i"
+        insert t/2 take/last t/1
+        o/r: to-decimal t/1
+        o/i: to-decimal t/2
+      ] return o
+    ]
+  ]
+  fail/where ajoin [
+    "Cannot make complex! from " mold def
+  ] backtrace 4
+]
+
+complex!/make: complex-make: func [type def] [
   if same? type complex! [ ;; MAKE
     if complex? def [return copy def]
-    o: make map! reduce [
-      'custom-type complex!
-      'r 0 'i 0
-    ]
-    case [
-      number? def [o/r: def return o]
-      block? def [o/r: def/1 o/i: def/2 return o]
-      string? def [
-        if attempt [
-          t: split def #"i"
-          insert t/2 take/last t/1
-          o/r: to-decimal t/1
-          o/i: to-decimal t/2
-        ] return o
-      ]
-    ]
-    fail/where ajoin [
-      "Cannot make complex! from " mold def
-    ] backtrace 4
+    return to-complex def
   ]
   assert [complex? def] ;; TO
   switch type [
@@ -47,20 +52,20 @@ complex!/make: complex-make: func [type def o: t:] [
   fail/where ajoin ["Cannot convert complex! to " type] backtrace 3
 ]
 
-i: complex-make complex! [0 1]
+i: to-complex [0 1]
 
 +i: enfix func [
   v1 [<tight> any-number!]
   v2 [<tight> any-number!]
 ] [
-  complex-make complex! reduce [v1 v2]
+  to-complex reduce [v1 v2]
 ]
 
 -i: enfix func [
   v1 [<tight> any-number!]
   v2 [<tight> any-number!]
 ] [
-  complex-make complex! reduce [v1 negate v2]
+  to-complex reduce [v1 negate v2]
 ]
 
 complex!/form: complex-form: func [
@@ -83,24 +88,24 @@ complex!/print: func [value] [
 ]
 
 complex!/add: func [v1 v2 v:] [
-  v1: complex-make complex! v1 v2: complex-make complex! v2
-  v: complex-make complex! reduce[
+  v1: to-complex v1 v2: to-complex v2
+  v: to-complex reduce[
     add v1/r v2/r
     add v1/i v2/i
   ]
 ]
 
 complex!/subtract: func [v1 v2 v:] [
-  v1: complex-make complex! v1 v2: complex-make complex! v2
-  v: complex-make complex! reduce[
+  v1: to-complex v1 v2: to-complex v2
+  v: to-complex reduce[
     subtract v1/r v2/r
     subtract v1/i v2/i
   ]
 ]
 
 complex!/multiply: complex-mul: func [v1 v2 v:] [
-  v1: complex-make complex! v1 v2: complex-make complex! v2
-  v: complex-make complex! reduce[
+  v1: to-complex v1 v2: to-complex v2
+  v: to-complex reduce[
     subtract
       multiply v1/r v2/r
       multiply v1/i v2/i
@@ -111,8 +116,8 @@ complex!/multiply: complex-mul: func [v1 v2 v:] [
 ]
 
 complex!/divide: complex-div: func [v1 v2 v: r2:] [
-  v1: complex-make complex! v1 v2: complex-make complex! v2
-  v: complex-make complex! reduce[
+  v1: to-complex v1 v2: to-complex v2
+  v: to-complex reduce[
     add
       multiply v1/r v2/r
       multiply v1/i v2/i
@@ -180,8 +185,8 @@ complex!/power: func [z k r:] [
     ]
     return r
   ]
-  z: complex-make complex! z
-  k: complex-make complex! k
+  z: to-complex z
+  k: to-complex k
   if all [zero? z/r  zero? z/i] [
     if k/r > 0 [return 0]
     return make error! _
