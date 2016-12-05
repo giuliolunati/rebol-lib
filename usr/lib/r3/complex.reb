@@ -7,7 +7,8 @@ REBOL [
   Exports: [complex! complex? to-complex i +i -i]
 ]
 
-import 'custom
+custom: import 'custom
+custom: custom/custom
 
 complex!: make map! 8
 
@@ -166,6 +167,12 @@ complex!/log-e: complex-log: func [z o:] [
   o
 ]
 
+custom/log-e: adapt :custom/log-e [
+  if all [any-number? value  value < 0] [
+    value: to-complex value
+  ]
+]
+
 complex!/exp: complex-exp: func [z o: r:] [
   o: make map! 3
   o/custom-type: complex!
@@ -203,4 +210,11 @@ complex!/square-root: func [z o: r: a:] [
   o/r: r * cosine/radians a
   o
 ]
+
+custom/square-root: adapt :custom/square-root [
+  if all [any-number? value  value < 0] [
+    value: to-complex value
+  ]
+]
+
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

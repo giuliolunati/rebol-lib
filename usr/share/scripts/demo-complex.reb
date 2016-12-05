@@ -70,11 +70,13 @@ demo [
   [exp y]
   [y: exp (3 +i (2 * pi + 1))]
   [log y]
+  [log -1]
   _
   "Power and square-root:"
   [power (0.866 +i 0.5) 12]
   [2 ** (1 + i)]j
   [z: square-root (2 * i)]
   [z: sqrt z]
+  [sqrt -1]
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
