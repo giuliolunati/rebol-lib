@@ -88,7 +88,7 @@ complex!/print: func [value] [
   print complex-form value
 ]
 
-complex!/add: func [v1 v2 v:] [
+complex!/add: complex-add: func [v1 v2 v:] [
   v1: to-complex v1 v2: to-complex v2
   v: to-complex reduce[
     add v1/r v2/r
@@ -217,4 +217,22 @@ custom/square-root: adapt :custom/square-root [
   ]
 ]
 
+complex!/sin: complex-sin: func [z t:] [
+  z: complex-exp complex-mul i z
+  z: complex-add z complex-div -1 z
+  t: z/r / -2  z/r: z/i / 2  z/i: t
+  z
+]
+
+complex!/cos: complex-cos: func [z t:] [
+  z: complex-exp complex-mul i z
+  z: complex-add z complex-div 1 z
+  z/r: z/r / 2  z/i: z/i / 2
+  z
+]
+
+complex!/tan: func [z s: c: t:] [
+  complex-div complex-sin z complex-cos z
+]
+  
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

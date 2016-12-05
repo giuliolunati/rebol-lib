@@ -339,6 +339,24 @@ square-root: func [value] [any [
   fail-invalid-parameter 'square-root 'value
 ]]
 
+sin: func [value] [any [
+  attempt [lib/sine/radians value]
+  attempt [value/custom-type/sin value]
+  fail-invalid-parameter 'sin 'value
+]]
+
+cos: func [value] [any [
+  attempt [lib/cosine/radians value]
+  attempt [value/custom-type/cos value]
+  fail-invalid-parameter 'cos 'value
+]]
+
+tan: func [value] [any [
+  attempt [lib/tangent/radians value]
+  attempt [value/custom-type/tan value]
+  fail-invalid-parameter 'tan 'value
+]]
+
 ] ; custom object
 
 infix-alias: [+ add  - subtract  * multiply  / divide   ** power]

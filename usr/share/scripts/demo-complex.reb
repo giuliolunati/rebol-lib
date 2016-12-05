@@ -24,6 +24,7 @@ demo: func [code] [
         do code
       ]
       code = _ [print/only newline]
+      code = 'quit [quit]
     ]
   ]
 ]
@@ -78,5 +79,8 @@ demo [
   [z: square-root (2 * i)]
   [z: sqrt z]
   [sqrt -1]
+  _
+  "Trigonometrics:"
+  [cos (i + 1)] [sin (i + 1)] [tan (i + 1)]
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
