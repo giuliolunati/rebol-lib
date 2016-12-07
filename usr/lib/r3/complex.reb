@@ -40,7 +40,7 @@ to-complex: func [def o: t:] [
   ] backtrace 4
 ]
 
-complex!/make: complex-make: func [type def] [
+complex!/make: func [type def] [
   if same? type complex! [ ;; MAKE
     if complex? def [return copy def]
     return to-complex def

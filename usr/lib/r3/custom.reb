@@ -52,6 +52,27 @@ customize: proc ['where f:] [
   ]
 ]
 
+try-method: func [method arg] [
+  all [
+    attempt [method: :arg/custom-type/:method]
+    attempt [method arg]
+  ]
+]
+
+try-method-1: func [method arg1 arg2] [
+  all [
+    attempt [method: :arg1/custom-type/:method]
+    attempt [method arg1 arg2]
+  ]
+]
+
+try-method-2: func [method arg1 arg2] [
+  all [
+    attempt [method: :arg2/custom-type/:method]
+    attempt [method arg1 arg2]
+  ]
+]
+
 custom: make object! [
 
 make: adapt :lib/make [
@@ -276,85 +297,103 @@ probe: func [value [any-value!] /form] [
 
 add: func [value1 value2] [any [
   attempt [lib/add value1 value2]
-  attempt [value1/custom-type/add value1 value2]
-  attempt [value2/custom-type/add value1 value2]
+  try-method-1 'add value1 value2
+  try-method-2 'add value1 value2
   fail-invalid-parameter 'add [value1 value2]
 ]]
 
 subtract: func [value1 value2] [any [
   attempt [lib/subtract value1 value2]
-  attempt [value1/custom-type/subtract value1 value2]
-  attempt [value2/custom-type/subtract value1 value2]
+  try-method-1 'subtract value1 value2
+  try-method-2 'subtract value1 value2
   fail-invalid-parameter 'subtract [value1 value2]
 ]]
 
 multiply: func [value1 value2] [any [
   attempt [lib/multiply value1 value2]
-  attempt [value1/custom-type/multiply value1 value2]
-  attempt [value2/custom-type/multiply value1 value2]
+  try-method-1 'multiply value1 value2
+  try-method-2 'multiply value1 value2
   fail-invalid-parameter 'multiply [value1 value2]
 ]]
 
 divide: func [value1 value2] [any [
   attempt [lib/divide value1 value2]
-  attempt [value1/custom-type/divide value1 value2]
-  attempt [value2/custom-type/divide value1 value2]
+  try-method-1 'divide value1 value2
+  try-method-2 'divide value1 value2
   fail-invalid-parameter 'divide [value1 value2]
 ]]
 
 absolute: func [value] [any [
   attempt [lib/absolute value]
-  attempt [value/custom-type/absolute value]
+  try-method 'absolute value
   fail-invalid-parameter 'absolute 'value
 ]]
 
 negate: func [value] [any [
   attempt [lib/negate value]
-  attempt [value/custom-type/negate value]
+  try-method 'negate value
   fail-invalid-parameter 'negate 'value
 ]]
 
 log-e: func [value f:] [any [
   attempt [lib/log-e value]
-  attempt [value/custom-type/log-e value]
-  fail-invalid-parameter 'log 'value
+  try-method 'log-e value
+  fail-invalid-parameter 'log-e 'value
 ]]
 
 exp: func [value] [any [
   attempt [lib/exp value]
-  attempt [value/custom-type/exp value]
+  try-method 'exp value
   fail-invalid-parameter 'exp 'value
 ]]
 
 power: func [number exponent] [any [
   attempt [lib/power number exponent]
-  attempt [number/custom-type/power number exponent]
-  attempt [exponent/custom-type/power number exponent]
+  try-method-1 'power number exponent
+  try-method-2 'power number exponent
   fail-invalid-parameter 'power [number exponent]
 ]]
 
 square-root: func [value] [any [
   attempt [lib/square-root value]
-  attempt [value/custom-type/square-root value]
+  try-method 'square-root value
   fail-invalid-parameter 'square-root 'value
 ]]
 
 sin: func [value] [any [
   attempt [lib/sine/radians value]
-  attempt [value/custom-type/sin value]
+  try-method 'sin value
   fail-invalid-parameter 'sin 'value
 ]]
 
 cos: func [value] [any [
   attempt [lib/cosine/radians value]
-  attempt [value/custom-type/cos value]
+  try-method 'cos value
   fail-invalid-parameter 'cos 'value
 ]]
 
 tan: func [value] [any [
   attempt [lib/tangent/radians value]
-  attempt [value/custom-type/tan value]
+  try-method 'tan value
   fail-invalid-parameter 'tan 'value
+]]
+
+asin: func [value] [any [
+  attempt [lib/arcsine/radians value]
+  try-method 'asin value
+  fail-invalid-parameter 'asin 'value
+]]
+
+acos: func [value] [any [
+  attempt [lib/arccosine/radians value]
+  try-method 'acos value
+  fail-invalid-parameter 'acos 'value
+]]
+
+atan: func [value] [any [
+  attempt [lib/arctangent/radians value]
+  try-method 'atan value
+  fail-invalid-parameter 'atan 'value
 ]]
 
 ] ; custom object

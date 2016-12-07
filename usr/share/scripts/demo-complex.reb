@@ -81,6 +81,11 @@ demo [
   [sqrt -1]
   _
   "Trigonometrics:"
-  [cos (i + 1)] [sin (i + 1)] [tan (i + 1)]
+  [z: cos (i + 1)]
+  [acos z]
+  [z: sin (i + 1)]
+  [asin z]
+  [z: tan (i + 1)]
+  [atan z]
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
