@@ -96,7 +96,7 @@ complex!/add: c-add: func [v1 v2 v:] [
   ]
 ]
 
-complex!/subtract: func [v1 v2 v:] [
+complex!/subtract: c-sub: func [v1 v2 v:] [
   v1: to-complex v1 v2: to-complex v2
   v: to-complex reduce[
     subtract v1/r v2/r
@@ -220,19 +220,40 @@ custom/square-root: adapt :custom/square-root [
 complex!/sin: c-sin: func [z t:] [
   z: c-exp c-mul i z
   z: c-add z c-div -1 z
-  t: z/r / -2  z/r: z/i / 2  z/i: ;t=z/2i
+  t: z/r / -2  z/r: z/i / 2  z/i: t ;t=z/2i
   z
 ]
 
-complex!/cos: c-cos: func [z t:] [
+complex!/asin: c-asin: func [z t:] [
+  z: c-mul z i
+  t: c-sqrt (c-add 1 c-mul z z)
+  either z/r >= 0 [
+    t: c-add z t 
+  ][
+    t: c-div -1 c-sub z t
+  ]
+  c-div c-log t i
+]
+
+complex!/cos: c-cos: func [z] [
   z: c-exp c-mul i z
   z: c-add z c-div 1 z
-  z/r: z/r / 2  z/i: z/i / 2
-  z
+  c-div z 2
 ]
 
-complex!/tan: func [z s: c: t:] [
+complex!/acos: func [z] [
+  c-sub (pi / 2) c-asin z
+]
+
+complex!/tan: func [z] [
   c-div c-sin z c-cos z
 ]
 
+complex!/atan: func [z] [
+  z: c-mul z i
+  z: c-div c-add 1 z c-sub 1 z
+  z: c-div c-log z 2
+  c-div z i
+]
+  
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
