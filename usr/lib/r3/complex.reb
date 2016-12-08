@@ -140,6 +140,17 @@ complex!/absolute: c-abs: func [v] [
     multiply v/i v/i
 ]
 
+complex!/negate: func [z] [
+  z: copy z
+  z/r: negate z/r
+  z/i: negate z/i
+  z
+]
+
+complex!/zero?: c-zero?: func [z] [
+  all [zero? z/r  zero? z/i]
+]
+
 atan2: func [y x a:] [
   either (absolute x) >= (absolute y) [
     if zero? x [return 0]
@@ -194,7 +205,7 @@ complex!/power: func [z k r:] [
   ]
   z: to-complex z
   k: to-complex k
-  if all [zero? z/r  zero? z/i] [
+  if c-zero? z [
     if k/r > 0 [return 0]
     return make error! _
   ]

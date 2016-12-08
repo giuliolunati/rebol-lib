@@ -57,11 +57,13 @@ demo [
   [mold to block! a]
   [mold to string! a]
   _
-  "Test a value with 'complex? :"
+  "Test a value with 'complex? and 'zero? :"
   [complex? b] [complex? 3.1]
+  [zero? 0 +i 0]
   _
   "Some arithmetics:"
-  [[a "," b]]  [a + b] [a - b] [a * b] [a / b]
+  [[a "," b]]
+  [negate a] [a + b] [a - b] [a * b] [a / b]
   _
   "Also mixed with real numbers:"
   [2 +i 3 * 2] [1 / (1 -i 2)]

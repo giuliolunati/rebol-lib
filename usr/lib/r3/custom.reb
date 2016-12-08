@@ -335,7 +335,13 @@ negate: func [value] [any [
   fail-invalid-parameter 'negate 'value
 ]]
 
-log-e: func [value f:] [any [
+zero?: func [value] [any [
+  attempt [lib/zero? value]
+  try-method 'zero? value
+  fail-invalid-parameter 'zero? 'value
+]]
+
+log-e: func [value] [any [
   attempt [lib/log-e value]
   try-method 'log-e value
   fail-invalid-parameter 'log-e 'value
