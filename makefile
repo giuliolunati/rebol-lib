@@ -13,6 +13,7 @@ usr/lib/r3 \
 usr/lib/r3/altjson.reb \
 usr/lib/r3/complex.reb \
 usr/lib/r3/custom.reb \
+usr/lib/r3/fraction.reb \
 usr/lib/r3/html.reb \
 usr/lib/r3/lest.reb \
 usr/lib/r3/profile.reb \
@@ -24,6 +25,8 @@ usr/lib/r3/sl4a.reb \
 usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
+usr/share/scripts/demo-complex.reb \
+usr/share/scripts/demo-fraction.reb \
 usr/share/scripts/remark-test.reb \
 usr/share/scripts/test-recode.reb \
 usr/share/scripts/shttpd.reb
