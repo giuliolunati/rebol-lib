@@ -41,13 +41,13 @@ fail-invalid-parameter: func [
 ]
 
 customize: proc ['where f:] [
-  foreach w bind words-of custom where [
+  foreach w bind/new words-of custom where [
     set w :custom/:w
   ]
-  foreach [o p] bind infix-alias where [
+  foreach [o p] bind/new infix-alias where [
     set/lookback o tighten :custom/:p
   ]
-  foreach [a b] bind prefix-alias where [
+  foreach [a b] bind/new prefix-alias where [
     set a :custom/:b
   ]
 ]
@@ -102,19 +102,19 @@ form: func [
   if r: attempt [apply :value/custom-type/form frame]
   [return r]
 
-  if any[block? value group? value] [
+  if any [block? :value group? :value] [
     r: copy ""
-    either mold-recur? value [append r "..."]
+    either mold-recur? :value [append r "..."]
     [
-      append/only mold-stack value
-      if all[new not quote] [value: reduce value]
+      append/only mold-stack :value
+      if all[new not quote] [value: reduce :value]
       delim: case [
         not all [new delimit] [space]
         block? delimiter [take delimiter]
         true [delimiter]
       ]
       forall value [
-        if all [delim not head? value] [append r delim]
+        if all [delim not head? :value] [append r delim]
         append r apply :form [value: value/1 delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
       ]
       take/last mold-stack
@@ -122,14 +122,14 @@ form: func [
     return r
   ]
 
-  if map? value [
+  if map? :value [
     r: copy ""
-    either mold-recur? value [append r "..."]
+    either mold-recur? :value [append r "..."]
     [
-      append/only mold-stack value
-      for-each i value [repend r [
+      append/only mold-stack :value
+      for-each i :value [repend r [
         mold i space
-        apply :mold [value: select value i delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
+        apply :mold [value: select :value i delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
         indented-line
       ]]
       take/last mold-stack
@@ -137,14 +137,14 @@ form: func [
     return r
   ]
 
-  if object? value [
+  if object? :value [
     r: copy ""
-    either mold-recur? value [append r "..."]
+    either mold-recur? :value [append r "..."]
     [
-      append/only mold-stack value
-      for-each i value [repend r [
+      append/only mold-stack :value
+      for-each i :value [repend r [
         mold i ": "
-        apply :mold [value: select value i delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
+        apply :mold [value: select :value i delimit: delimit if delimit [delimiter: delimiter] quote: quote new: new]
         indented-line
       ]]
       take/last mold-stack
@@ -161,23 +161,23 @@ mold: func [
   r: line: lines:
   ] [
   if r: attempt [
-    apply :value/custom-type/mold [value: value only: only all: all flat: flat]
+    apply :value/custom-type/mold [value: :value only: only all: all flat: flat]
   ]
   [return r]
 
   line: either flat [:newline][:indented-line]
 
-  if any[block? value group? value] [
-    if group? value [only: false]
+  if any [block? :value group? :value] [
+    if group? :value [only: false]
     unless only [indent+]
-    r: copy either group? value ["("]
+    r: copy either group? :value ["("]
     [either only [""] ["["]]
     lines: false
-    either mold-recur? value [append r "..."]
+    either mold-recur? :value [append r "..."]
     [
-      append/only mold-stack value
+      append/only mold-stack :value
       forall value [
-        if new-line? value [
+        if new-line? :value [
           lines: true
           if r > "" [append r line]
         ]
@@ -188,21 +188,21 @@ mold: func [
       take/last mold-stack
     ]
     unless only [indent- if lines [append r line]]
-    return append r either group? value [")"]
+    return append r either group? :value [")"]
     [either only [""] ["]"]]
   ]
 
-  if map? value [
+  if map? :value [
     r: copy either all
     ["#[map! ["] ["make map! ["]
-    either mold-recur? value [append r "..."]
+    either mold-recur? :value [append r "..."]
     [
-      append/only mold-stack value
+      append/only mold-stack :value
       indent+
-      for-each i value [repend r [
+      for-each i :value [repend r [
           line
           mold i space
-          apply :mold [value: select value i only: false all: all flat: flat]
+          apply :mold [value: select :value i only: false all: all flat: flat]
       ]]
       indent-
       append r line
@@ -212,22 +212,22 @@ mold: func [
     return r
   ]
 
-  if object? value [
+  if object? :value [
     r: copy either all
     ["#[object! ["] ["make object! ["]
-    either mold-recur? value [append r "..."]
+    either mold-recur? :value [append r "..."]
     [
-      append/only mold-stack value
+      append/only mold-stack :value
       indent+
       repend r [line "[self: "]
-      for-each i value [repend r [mold i space]]
+      for-each i :value [repend r [mold i space]]
       take/last r
       repend r [#"]" line #"["]
       indent+
-      for-each i value [repend r [
+      for-each i :value [repend r [
           line
           mold i ": "
-          apply :mold [value: select value i only: false all: all flat: flat]
+          apply :mold [value: select :value i only: false all: all flat: flat]
       ]]
       indent-
       repend r [line #"]"]
@@ -238,7 +238,7 @@ mold: func [
     return r
   ]
 
-  apply :lib/mold [value: value only: only all: all flat: flat]
+  apply :lib/mold [value: :value only: only all: all flat: flat]
 ]
 
 ajoin: func [
@@ -401,10 +401,9 @@ atan: func [value] [any [
   try-method 'atan value
   fail-invalid-parameter 'atan 'value
 ]]
-
 ] ; custom object
 
-infix-alias: [+ add  - subtract  * multiply  / divide   ** power]
+infix-alias: [+ add  - subtract  * multiply  / divide  ** power]
 prefix-alias: [abs absolute  log log-e  sqrt square-root]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
