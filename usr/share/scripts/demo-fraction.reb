@@ -66,6 +66,13 @@ demo [
   [fraction? a] [fraction? 3.1]
   [zero? (0 / 5)]
   _
+  "Comparison:"
+  [(3 / 5) == (6 / 10)]
+  [(3 / 5) == 0.6]
+  [(3 / 5) = 0.6]
+  [(3 / 5) < (2 / 3)]
+  [(3 / 5) > 0.6]
+  _
   "Arithmetics:"
   (a: 7 / 30  b: 5 / 42)
   [negate a]

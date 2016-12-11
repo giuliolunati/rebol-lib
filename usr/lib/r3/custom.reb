@@ -401,9 +401,78 @@ atan: func [value] [any [
   try-method 'atan value
   fail-invalid-parameter 'atan 'value
 ]]
+
+equal?: func [value1 value2 r:] [
+  if map? value1 [
+    r: trap [value1/custom-type/equal? value1 value2]
+    if any [r == true | r == false] [return r]
+  ]
+  if map? value2 [
+    r: trap [value2/custom-type/equal? value1 value2]
+    if any [r == true | r == false] [return r]
+  ]
+  lib/equal? value1 value2
+]
+
+not-equal?: func [value1 value2 r:] [
+  not equal? value1 value2
+]
+
+strict-equal?: func [value1 value2 r:] [
+  if map? value1 [
+    r: trap [value1/custom-type/strict-equal? value1 value2]
+    if any [r == true | r == false] [return r]
+  ]
+  if map? value2 [
+    r: trap [value2/custom-type/strict-equal? value1 value2]
+    if any [r == true | r == false] [return r]
+  ]
+  lib/equal? value1 value2
+]
+
+strict-not-equal?: func [value1 value2 r:] [
+  not strict-equal? value1 value2
+]
+
+lesser?: func [value1 value2 r:] [
+  r: trap [lib/lesser? value1 value2]
+  if any [r == true | r == false] [return r]
+  r: trap [value1/custom-type/lesser? value1 value2]
+  if any [r == true | r == false] [return r]
+  r: trap [value2/custom-type/lesser? value1 value2]
+  if any [r == true | r == false] [return r]
+  false
+]
+
+greater?: func [value1 value2] [
+  lesser? value2 value1
+]
+
+lesser-or-equal?: func [value1 value2 r:] [
+  r: trap [lib/lesser-or-equal? value1 value2]
+  if any [r == true | r == false] [return r]
+  r: trap [value1/custom-type/lesser-or-equal? value1 value2]
+  if any [r == true | r == false] [return r]
+  r: trap [value2/custom-type/lesser-or-equal? value1 value2]
+  if any [r == true | r == false] [return r]
+  false
+]
+
+greater-or-equal?: func [value1 value2] [
+  lesser-or-equal? value2 value1
+]
+
 ] ; custom object
 
-infix-alias: [+ add  - subtract  * multiply  / divide  ** power]
+infix-alias: [
+  + add  - subtract
+  * multiply  / divide  ** power
+  = equal?  == strict-equal?
+  != not-equal?  !== strict-not-equal?
+  < lesser?  <= lesser-or-equal?
+  > greater?  >= greater-or-equal?
+]
+
 prefix-alias: [abs absolute  log log-e  sqrt square-root]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

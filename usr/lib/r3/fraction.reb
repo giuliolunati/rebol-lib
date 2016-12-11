@@ -85,12 +85,13 @@ to-fraction: func [def o: t:] [
   o
 ]
 
-fraction!/make: func [type def] [
+fraction!/make: f-make: func [type def] [
   if same? type fraction! [ ;; MAKE
     if fraction? def [return copy def]
     return to-fraction def
   ]
-  assert [fraction? def] ;; TO
+  unless fraction? def [return make type def]
+  ;; TO
   switch type [
     :decimal! [return def/n / def/d]
     :block! [return reduce [def/n def/d]]
@@ -178,6 +179,38 @@ fraction!/square-root: func [x n: d:] [
     ]
     n / d
   ]
+]
+
+fraction!/equal?: f-=: func [x y] [
+  if all [fraction? x fraction? y] [
+    return (x/n * y/d) = (x/d * y/n)
+  ]
+  (f-make decimal! x) = (f-make decimal! y)
+]
+
+fraction!/strict-equal?: func [x y] [
+  if all [fraction? x fraction? y] [
+    return (x/n * y/d) = (x/d * y/n)
+  ]
+  false
+]
+
+fraction!/lesser?: func [x y r:] [
+  if all [fraction? x fraction? y] [
+    return either (sign? y/d) = (sign? x/d)
+    [(x/n * y/d) < (x/d * y/n)]
+    [(x/d * y/n) < (x/n * y/d)]
+  ]
+  (f-make decimal! x) < (f-make decimal! y)
+]
+
+fraction!/lesser-or-equal?: func [x y r:] [
+  if all [fraction? x fraction? y] [
+    return either (sign? y/d) = (sign? x/d)
+    [(x/n * y/d) <= (x/d * y/n)]
+    [(x/d * y/n) <= (x/n * y/d)]
+  ]
+  (f-make decimal! x) < (f-make decimal! y)
 ]
 
 ; vim: set syn=rebol ts=2 sw=2 sts=2:

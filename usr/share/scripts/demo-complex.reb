@@ -61,6 +61,10 @@ demo [
   [complex? b] [complex? 3.1]
   [zero? 0 +i 0]
   _
+  "Comparison:"
+  [(2 +i 0) = 2]
+  [(2 +i 0) == 2]
+  _
   "Some arithmetics:"
   [[a "," b]]
   [negate a] [a + b] [a - b] [a * b] [a / b]

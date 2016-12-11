@@ -1,9 +1,9 @@
 REBOL [
-	Title: "Complex numbers"
-	Author: "giuliolunati@gmail.com"
-	Version: 0.1.0
-	Type: module
-	Name: 'complex
+  Title: "Complex numbers"
+  Author: "giuliolunati@gmail.com"
+  Version: 0.1.0
+  Type: module
+  Name: 'complex
   Exports: [complex! complex? to-complex i +i -i]
 ]
 
@@ -265,6 +265,20 @@ complex!/atan: func [z] [
   z: c-div c-add 1 z c-sub 1 z
   z: c-div c-log z 2
   c-div z i
+]
+  
+complex!/equal?: c-=: func [a b] [
+  unless all [complex? a complex? b] [
+    a: to-complex a  b: to-complex b
+  ]
+  all [a/r = b/r  a/i = b/i]
+]
+
+complex!/strict-equal?: func [a b] [
+  if all [complex? complex? b] [
+    return all [a/r == b/r  a/i == b/i]
+  ]
+  false
 ]
   
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
