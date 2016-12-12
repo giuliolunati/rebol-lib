@@ -50,7 +50,7 @@ template-page: trim/auto {
 	</body></html>
 }
 
-crlf2x: join crlf crlf
+crlf2x: join-of crlf crlf
 crlf2xb: to-binary crlf2x
 
 build-error-response: function [
@@ -198,7 +198,7 @@ send-answer: function [
 		probe to-string body
 	]
 	write port header
-	until [
+	loop-until [
 		write port copy/part body chunk
 		tail? body: skip body chunk
 	]
@@ -275,9 +275,9 @@ start: func [
 	"Start listening"
 ][
 	if config/verbose > 0 [
-		print join "Websy starting on localhost:" config/port
+		print join-of "Websy starting on localhost:" config/port
 	]
-	listen-port: open join tcp://: config/port
+	listen-port: open join-of tcp://: config/port
 	listen-port/awake: :awake-server-dispatch
 	wait listen-port
 ]

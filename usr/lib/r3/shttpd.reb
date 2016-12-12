@@ -57,7 +57,7 @@ websy/extend/set [
 		]
 		req: parse-request request
 		mime: ext-map/(req/file-type)
-		file: join config/root req/path
+		file: join-of config/root req/path
 		type: exists? file
 		if type = 'dir [
 			while [#"/" = last file] [take/last file]
@@ -67,7 +67,7 @@ websy/extend/set [
 					400 request "No folder access."
 			]
 			either file? config/list-dir [
-				file-index: join file config/list-dir
+				file-index: join-of file config/list-dir
 				either 'file = exists? file-index [
 					;; drop to type = 'dir
 					file: file-index
@@ -84,7 +84,7 @@ websy/extend/set [
 		]
 		if type = 'file [
 			either error? data: trap [read file] [
-				return build-error-response 400 request join "Cannot read file " file
+				return build-error-response 400 request join-of "Cannot read file " file
 			] [
 				return reduce [200 mime data]
 			]
