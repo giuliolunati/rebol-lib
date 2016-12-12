@@ -84,6 +84,10 @@ demo [
   [2 / 3 ** 0.5]
   [sqrt (16 / 81)]
   [sqrt (2 / 3)]
+  _
+  "Trascendental functions:"
+  [f: to-fraction exp 1] [log f]
+  [f: to-fraction asin .5] [sin f]
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
 

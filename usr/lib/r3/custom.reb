@@ -326,6 +326,7 @@ divide: func [value1 value2] [any [
 absolute: func [value] [any [
   attempt [lib/absolute value]
   try-method 'absolute value
+  attempt [lib/absolute to decimal! value]
   fail-invalid-parameter 'absolute 'value
 ]]
 
@@ -344,12 +345,14 @@ zero?: func [value] [any [
 log-e: func [value] [any [
   attempt [lib/log-e value]
   try-method 'log-e value
+  attempt [lib/log-e to decimal! value]
   fail-invalid-parameter 'log-e 'value
 ]]
 
 exp: func [value] [any [
   attempt [lib/exp value]
   try-method 'exp value
+  attempt [lib/exp to decimal! value]
   fail-invalid-parameter 'exp 'value
 ]]
 
@@ -363,42 +366,49 @@ power: func [number exponent] [any [
 square-root: func [value] [any [
   attempt [lib/square-root value]
   try-method 'square-root value
+  attempt [lib/square-root to decimal! value]
   fail-invalid-parameter 'square-root 'value
 ]]
 
 sin: func [value] [any [
   attempt [lib/sine/radians value]
   try-method 'sin value
+  attempt [lib/sine/radians to decimal! value]
   fail-invalid-parameter 'sin 'value
 ]]
 
 cos: func [value] [any [
   attempt [lib/cosine/radians value]
   try-method 'cos value
+  attempt [lib/cosine/radians to decimal! value]
   fail-invalid-parameter 'cos 'value
 ]]
 
 tan: func [value] [any [
   attempt [lib/tangent/radians value]
   try-method 'tan value
+  attempt [lib/tangent/radians to decimal! value]
   fail-invalid-parameter 'tan 'value
 ]]
 
 asin: func [value] [any [
   attempt [lib/arcsine/radians value]
   try-method 'asin value
+  attempt [lib/arcsine/radians to decimal! value]
   fail-invalid-parameter 'asin 'value
 ]]
 
 acos: func [value] [any [
   attempt [lib/arccosine/radians value]
   try-method 'acos value
+  attempt [lib/arccosine/radians to decimal! value]
   fail-invalid-parameter 'acos 'value
 ]]
 
 atan: func [value] [any [
   attempt [lib/arctangent/radians value]
   try-method 'atan value
+  attempt [lib/arctangent/radians to decimal! value]
   fail-invalid-parameter 'atan 'value
 ]]
 
