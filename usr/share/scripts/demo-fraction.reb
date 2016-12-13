@@ -85,9 +85,21 @@ demo [
   [sqrt (16 / 81)]
   [sqrt (2 / 3)]
   _
-  "Trascendental functions:"
-  [f: to-fraction exp 1] [log f]
-  [f: to-fraction asin .5] [sin f]
+  "Approximate real by fraction:"
+  (precision: 0.001)
+  [f: approximate exp 1 precision]
+  [abs (f - exp 1)]
+  [f: approximate pi 1e-5]
+  [to decimal! f]
+  [pi]
+  [f: to-fraction pi]
+  [f: approximate pi 0]
+  [f = pi]
+  _
+  "Numeric functions allowed w/o conversion:"
+  "(Note: 87/32 ~ e, 355/113 ~ pi)"
+  [log (87 / 32)]
+  [cos (355 / 113)]
 ]
 ; vim: set syn=rebol ts=2 sw=2 sts=2:
 

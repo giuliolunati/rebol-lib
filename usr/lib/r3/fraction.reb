@@ -4,14 +4,18 @@ REBOL [
   Version: 0.1.0
   Type: module
   Name: 'fraction
-  Exports: [fraction! fraction? to-fraction gcd]
+  Exports: [
+    fraction! fraction? to-fraction
+    approximate gcd
+  ]
 ]
 
 custom: import 'custom
 custom: custom/custom
 
-decimal-to-fraction: func [
-  x r: n1: d1: n2: d2: n: t:
+approximate: func [
+  x precision
+  r: n1: d1: n2: d2: n: t:
 ][
   n1: d2: 0  n2: d1: 1 r: x
   forever [
@@ -21,12 +25,12 @@ decimal-to-fraction: func [
     t: n * d2 + d1
     d1: d2  d2: t
     if n = x [break]
-    if n2 / d2 - x = 0 [break]
+    if (abs (n2 / d2 - x)) <= precision [break]
     r: 1 / (r - n)
   ]
   forever [
     n2: n2 - n1  d2: d2 - d1
-    if n2 / d2 - x != 0 [break]
+    if (abs (n2 / d2 - x)) > precision [break]
   ]
   to-fraction [n2 + n1  d2 + d1]
 ]
@@ -55,7 +59,7 @@ custom/divide: func [value1 value2] [
 to-fraction: func [def o: t:] [
   if fraction? def [return def]
   if decimal? def [
-    return decimal-to-fraction def
+    return approximate def 0
   ]
   o: make map! reduce [
     'custom-type fraction!
