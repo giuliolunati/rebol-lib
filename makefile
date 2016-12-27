@@ -27,7 +27,7 @@ usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
 usr/share/scripts/demo-complex.reb \
 usr/share/scripts/demo-fraction.reb \
-usr/share/scripts/remark-test.reb \
+usr/share/scripts/demo-remark.reb \
 usr/share/scripts/test-recode.reb \
 usr/share/scripts/shttpd.reb
 
