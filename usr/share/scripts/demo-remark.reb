@@ -3,6 +3,12 @@ import 'remark
 print to-html [
 html [
 head [
+  style [
+    .class1 [color: red | font-size: 200%]
+    #id1 [font-weight: bold]
+    /class2 []
+    div [text-align: center]
+  ]
 ]
 body [
 div 

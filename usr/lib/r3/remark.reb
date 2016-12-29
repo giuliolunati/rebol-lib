@@ -118,6 +118,27 @@ html: make object! [
   br:   tag-func br   true  true  false
   hr:   tag-func hr   true  true  false
 
+  style: func [b r: t:] [
+    r: ajoin [indented-line "<style>"]
+    parse b [any[
+      set t [word! | issue! | refinement!]
+      ( if refinement? t [
+          t: back change to-string t #"."
+        ]
+        append r ajoin [indented-line t]
+      )
+      and block! into [
+        (append r " {" ) any [
+          set t skip (
+            either bar? t
+            [ append r #";"]
+            [append r ajoin[space t]]
+          )
+        ] (append r " }")
+      ]
+    ]]
+    append r ajoin [indented-line "</style>"]
+  ]
 ]
 
 to-html: func[x t:] [
