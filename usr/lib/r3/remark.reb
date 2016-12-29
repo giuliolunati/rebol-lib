@@ -11,7 +11,14 @@ ajoin-block: func [b [block!] t:] [
   either empty? b [""] [t: ajoin b]
 ]
 
+tags: make map! [
+  ; tag [empty? newline? indent?]
+]
+
 html: make object! [
+  func: :lib/func
+  ajoin: :ajoin-block
+
   this: self
   indented-line: "^/"
   indent: 2
@@ -141,8 +148,10 @@ html: make object! [
   ]
 ]
 
-to-html: func[x t:] [
-  t: ajoin-block bind/new x html
+to-html: func[x /secure t:] [
+  t: do either secure
+  [ bind/new x html ]
+  [ bind x html ]
   if t/1 = newline [take t]
   t
 ]
