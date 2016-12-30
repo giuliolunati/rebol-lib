@@ -7,6 +7,17 @@ REBOL [
   Exports: [to-html]
 ]
 
+encode-block: func [
+  x [block!] output [object!]
+][
+  forall x [
+    case[
+      string? x/1 [change x output/encode x/1]
+      block? x/1 [encode-block x/1 output]
+    ]
+  ]
+]
+
 ajoin-block: func [b [block!] t:] [
   either empty? b [""] [t: ajoin b]
 ]
@@ -24,6 +35,17 @@ html: make object! [
   indent: 2
   indent++: does [loop indent [append indented-line space]]
   indent--: does [loop indent [take/last indented-line]]
+
+  encode: func [x [string!]] [
+    forall x [
+      switch first x [
+        #"&" [x: next x insert x "amp;"]
+        #"<" [x: change x #"&" insert x "lt;"]
+        #">" [x: change x #"&" insert x "gt;"]
+      ]
+    ]
+    x
+  ]
 
   emit: func [
     tag [tag!]
@@ -149,6 +171,7 @@ html: make object! [
 ]
 
 to-html: func[x /secure t:] [
+  encode-block x html
   t: do either secure
   [ bind/new x html ]
   [ bind x html ]
