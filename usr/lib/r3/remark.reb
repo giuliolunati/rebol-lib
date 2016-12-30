@@ -47,7 +47,7 @@ html: make object! [
     x
   ]
 
-  emit: func [
+  emit-tag: func [
     tag [tag!]
     close-tag [tag! blank!]
     break-before? [logic!]
@@ -55,23 +55,32 @@ html: make object! [
     :args [word!]
     :look [word!]
     return: [string!]
-    id: class: open-tag: t:
+    id: class: open-tag: style: t:
   ][
     args: get args
     look: get look
-    class: id: _
+    class: id: style: _
     open-tag: copy tag
     if indent? [indent++]
     forever [
       t: first look
-      either all [
-        word? t
-        #"." = first to-string t
-      ][
-        t: to-refinement next to-string t
-        take look
-      ][
-        t: take args
+      case [
+        all [word? t  #"." = first to-string t][
+          t: to-refinement next to-string t
+          take look
+        ]
+        set-word? t [ take look
+          t: ajoin [
+            t space take args
+          ]
+          either style
+          [ repend style ["; " t] ]
+          [ style: t ]
+          continue
+        ]
+        true [
+          t: take args
+        ]
       ]
       case [
         refinement? t [
@@ -90,6 +99,9 @@ html: make object! [
     ]
     if id [repend open-tag [ { id="} id {"}]]
     if class [repend open-tag [ { class="} class {"}]]
+    if style [repend open-tag [
+      { style="} style {"}
+    ] ]
     if indent? [indent--]
     if all [break-before? close-tag] [
       t: ajoin [t indented-line]
@@ -115,10 +127,10 @@ html: make object! [
     [ _ ]
     [ back insert copy tag "/" ]
     func [
-      args [any-string! issue! refinement! block! <...>]
-      :look [any-word! any-string! issue! refinement! block! <...>]
+      args [any-value! <...>]
+      :look [any-value! <...>]
     ]
-    compose [ emit
+    compose [ emit-tag
       (tag) (close-tag)
       (break-before?) (indent?)
       args look
@@ -147,15 +159,18 @@ html: make object! [
   br:   tag-func br   true  true  false
   hr:   tag-func hr   true  true  false
 
-  style: func [b r: t:] [
-    r: ajoin [indented-line "<style>"]
-    parse b [any[
+  style: func [b r: t: selector:] [
+    selector: [
       set t [word! | issue! | refinement!]
       ( if refinement? t [
           t: back change to-string t #"."
-        ]
-        append r ajoin [indented-line t]
-      )
+      ])
+    ]
+    r: ajoin [indented-line "<style>"]
+    indent++
+    parse b [any[
+      selector (repend r [indented-line t])
+      any [selector (repend r [", " t])]
       and block! into [
         (append r " {" ) any [
           set t skip (
@@ -166,6 +181,7 @@ html: make object! [
         ] (append r " }")
       ]
     ]]
+    indent--
     append r ajoin [indented-line "</style>"]
   ]
 ]
