@@ -15,7 +15,7 @@ websy/extend/set [
 
 	append config [root: %/ list-dir: true]
 
-	ext-map: make map! [
+	ext-map: make block! [
 		"css" css
 		"gif" gif
 		"htm" html
@@ -100,7 +100,12 @@ start: func [
 	root [file! string!] "web server root directory"
 ] [
 	config/port: port
-	while [#"/" = last root] [take/last root]
+	while [all [
+		#"/" = last root
+		1 < length root 
+	] ] [
+		take/last root
+	]
 	config/root: to-file root
 	websy/start
 ]

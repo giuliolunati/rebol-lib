@@ -1,7 +1,7 @@
 probe trap [
 
 args: system/options/args
-root: either args
+root: either args/1
 [to-file args/1]
 [%/]
 
