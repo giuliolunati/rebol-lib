@@ -4,194 +4,202 @@ REBOL [
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
   Description: "ReMark reader"
-  Exports: [to-html]
-]
-
-encode-block: func [
-  x [block!] output [object!]
-][
-  forall x [
-    case[
-      string? x/1 [change x output/encode x/1]
-      block? x/1 [encode-block x/1 output]
-    ]
-  ]
-]
-
-ajoin-block: func [b [block!] t:] [
-  either empty? b [""] [t: ajoin b]
-]
-
-tags: make map! [
-  ; tag [empty? newline? indent?]
+  Exports: [html-from-rem tree-from-rem]
 ]
 
 html: make object! [
-  func: :lib/func
-  ajoin: :ajoin-block
-
-  this: self
-  indented-line: "^/"
-  indent: 2
-  indent++: does [loop indent [append indented-line space]]
-  indent--: does [loop indent [take/last indented-line]]
-
-  encode: func [x [string!]] [
-    forall x [
-      switch first x [
-        #"&" [x: next x insert x "amp;"]
-        #"<" [x: change x #"&" insert x "lt;"]
-        #">" [x: change x #"&" insert x "gt;"]
+  ch&rs: charset "<&>"
+  encode: func [x [string! char!] r: t:] [
+    if char? x [x: to-string x]
+    unless find x ch&rs [return x]
+    r: make string! to-integer (1.1 * length x +1)
+    parse x [
+      some [
+        copy t [to ch&rs | to end] (append r t)
+        [ #"&" (append r "&amp;")
+        | #"<" (append r "&lt;")
+        | #">" (append r "&gt;")
+        | end
+        ]
       ]
-    ]
-    x
+    ] r
   ]
 
+  quot: func [x] [
+    ajoin [#""" x #"""]
+  ]
+
+  style-from-map: func [m s: k: v:] [
+    s: _
+    for-each [k v] m [
+      k: ajoin [k #":"]
+      either s [repend s ["; " k]] [s: k]
+      repend s [space v]
+    ] s
+  ]
+
+  from-style: func [x r: k: v: s:] [
+    s: _
+    for-each [k v] x [
+      r: _
+      for-each k k [
+        either r
+        [ repend r [", " k] ]
+        [ r: to-string k ]
+      ]
+      either s
+      [ append s r ]
+      [ s: r ]
+      repend s [" { " style-from-map v " } "]
+    ]
+    s
+  ]
+
+  from-tree: func [x a: b: c: t:] [
+    switch/default type-of x [
+      :blank! [""]
+      :string! :char! [encode x]
+      :block! [ajoin map-each t x [from-tree t]]
+      :map! [
+        t: x/.tag if t = 'doc [t: 'html]
+        c: either t = 'style
+        [ from-style x/. ]
+        [ from-tree x/. ]
+        a: copy b: to-tag t
+        t: x/id
+        if t [repend a [" id=" quot t]]
+        t: x/class
+        if t [repend a [" class=" quot t]]
+        t: x/style
+        if t [repend a [" style=" quot style-from-map t]]
+        either void? select x '. [
+          append a #"/" b: ""
+        ] [
+          b: back insert b #"/"
+        ]
+        ajoin [a c b]
+      ]
+    ] [print ["invalid" x] quit]
+  ]
+]
+
+rem: make object! [
+  ;; available with /SECURE:
+  space: :lib/space
+  group: :lib/reduce
+  func: :lib/func
+
   emit-tag: func [
-    tag [tag!]
-    close-tag [tag! blank!]
-    break-before? [logic!]
-    indent? [logic!]
-    :args [word!]
-    :look [word!]
-    return: [string!]
-    id: class: open-tag: style: t:
+    tag [word!]
+    is-empty? [logic!]
+    args [any-value! <...>]
+    :look [any-value! <...>]
+    return: [map!]
+    id: class: style: m: t:
   ][
-    args: get args
-    look: get look
     class: id: style: _
-    open-tag: copy tag
-    if indent? [indent++]
+    m: make map! 8
+    m/.tag: tag
     forever [
       t: first look
-      case [
-        all [word? t  #"." = first to-string t][
-          t: to-refinement next to-string t
-          take look
-        ]
-        set-word? t [ take look
-          t: ajoin [
-            t space take args
-          ]
-          either style
-          [ repend style ["; " t] ]
-          [ style: t ]
-          continue
-        ]
-        true [
-          t: take args
-        ]
+      if all [word? t #"." = first to-string t][
+        t: to-refinement next to-string t
       ]
-      case [
-        refinement? t [
-          t: next to-string t
-          either class
-          [repend class [space t]]
-          [class: t]
-        ]
-        issue? t [id: next to-string t]
-        string? t [break]
-        block? t [
-          t: ajoin-block t
-          break
-        ]
+      if refinement? t [ take look
+        unless class [class: make block! 4]
+        append class to-word t
+        continue
       ]
+      if set-word? t [ take look
+        t: to-word t
+        unless style [style: make map! 8]
+        style/:t: take args
+        continue
+      ]
+      if issue? t [ take look
+        id: next to-string t
+        continue
+      ]
+      break
     ]
-    if id [repend open-tag [ { id="} id {"}]]
-    if class [repend open-tag [ { class="} class {"}]]
-    if style [repend open-tag [
-      { style="} style {"}
-    ] ]
-    if indent? [indent--]
-    if all [break-before? close-tag] [
-      t: ajoin [t indented-line]
+    if id [m/id: id]
+    if class [m/class: class]
+    if style [m/style: style]
+    unless is-empty? [
+      t: take args
+      if block? t [t: reduce t]
+      m/.: t
     ]
-    either close-tag
-    [ t: ajoin [t close-tag] ]
-    [ append open-tag "/" ]
-    t: ajoin [open-tag t]
-    if break-before? [insert t indented-line]
-    t
+    m
   ]
 
   tag-func: func [
     'tag [word!]
     is-empty? [logic!]
-    break-before? [logic!]
-    indent? [logic!]
     return: [function!]
-    close-tag:
   ][
-    tag: to-tag tag
-    close-tag: either is-empty?
-    [ _ ]
-    [ back insert copy tag "/" ]
-    func [
-      args [any-value! <...>]
-      :look [any-value! <...>]
-    ]
-    compose [ emit-tag
-      (tag) (close-tag)
-      (break-before?) (indent?)
-      args look
-    ]
+    specialize 'emit-tag [tag: tag is-empty?: is-empty?]
   ]
 
-  ;tag: tag-func tag
-  ;                   is-empty?
-  ;                         break-before?
-  ;                               indent?
-  html: tag-func html false true  false
-  body: tag-func body false true  false
-  head: tag-func head false true  true
-  div:  tag-func div  false true  true
-  h1:   tag-func h1   false true  true
-  h2:   tag-func h2   false true  true
-  h3:   tag-func h3   false true  true
-  h4:   tag-func h4   false true  true
-  h5:   tag-func h5   false true  true
-  h6:   tag-func h6   false true  true
-  p:    tag-func p    false true  true
-  span: tag-func span false false false
-  b:    tag-func b    false false false
-  i:    tag-func i    false false false
-  img:  tag-func img  true  false false
-  br:   tag-func br   true  true  false
-  hr:   tag-func hr   true  true  false
+  ;tag:  tag-func tag   is-empty?
+  doc:   tag-func doc   false
+  body:  tag-func body  false
+  head:  tag-func head  false
+  title: tag-func title false
+  div:   tag-func div   false
+  h1:    tag-func h1    false
+  h2:    tag-func h2    false
+  h3:    tag-func h3    false
+  h4:    tag-func h4    false
+  h5:    tag-func h5    false
+  h6:    tag-func h6    false
+  p:     tag-func p     false
+  span:  tag-func span  false
+  b:     tag-func b     false
+  i:     tag-func i     false
+  img:   tag-func img   true 
+  br:    tag-func br    true 
+  hr:    tag-func hr    true 
 
-  style: func [b r: t: selector:] [
-    selector: [
+  style: func [code b: t: k: v: s: selector!:] [
+    selector!: [
       set t [word! | issue! | refinement!]
       ( if refinement? t [
-          t: back change to-string t #"."
+          t: to-word back change to-string t #"."
       ])
     ]
-    r: ajoin [indented-line "<style>"]
-    indent++
-    parse b [any[
-      selector (repend r [indented-line t])
-      any [selector (repend r [", " t])]
-      and block! into [
-        (append r " {" ) any [
-          set t skip (
-            either bar? t
-            [ append r #";"]
-            [append r ajoin[space t]]
-          )
-        ] (append r " }")
+    s: make block! 8
+    parse code [any [
+      (b: make block! 4)
+      some [selector! (append b t)]
+      (append/only s b)
+      (t: make map! 8)
+      some [
+        set k set-word! set v skip
+        (k: to-word k t/:k: v)
       ]
-    ]]
-    indent--
-    append r ajoin [indented-line "</style>"]
+      (append s t)
+    ] ]
+    make map! reduce [
+      '.tag 'style
+      '. s
+    ]
   ]
 ]
 
-to-html: func[x /secure t:] [
-  encode-block x html
-  t: do either secure
-  [ bind/new x html ]
-  [ bind x html ]
-  if t/1 = newline [take t]
+tree-from-rem: func[x /secure t:] [
+  either secure
+  [ t: do bind/new x rem ]
+  [ t: do bind x rem ]
   t
 ]
-;; vim: set syn=rebol sw=2 ts=2 sts=2:
+
+html-from-tree: :html/from-tree
+
+html-from-rem: func [x /secure] [
+  html-from-tree apply :tree-from-rem [
+    x: x secure: secure
+  ]
+]
+
+;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:

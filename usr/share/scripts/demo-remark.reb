@@ -7,9 +7,9 @@ demo: func [code] [
         ] [print x]
       ]
       block? code [
-        print [">> to-html" mold code]
+        print [">> html-from-rem" mold code]
         print "==="
-        print [to-html code]
+        print html-from-rem/secure code
         print "---"
       ]
       group? code [
@@ -32,8 +32,8 @@ demo [
   _
   "NOTE - only last node is returned:"
   ["bold" " normal" space "italic"]
-  "But you can use AJOIN:"
-  [ajoin ["bold" " normal" space "italic"]]
+  "But you can use GROUP:"
+  [group ["bold" " normal" space "italic"]]
   _
   "Tags are (variadic) functions..."
   [p [b "bold" "normal" br i "italic" ]]
@@ -46,12 +46,16 @@ demo [
   _
   "STYLE tag has its own (limited) syntax:"
   [style [
-    #foo .bar /foobar [font-size: 95%]
-    p h1 [text-align: center | color: red]
+    #foo .bar /foobar font-size: 95%
+    p h1 text-align: center border: "1pt red solid"
   ] ]
   _
+  "No 'HTML, use 'DOC instead:"
+  [doc [head _ body _]]
+  {NOTE '_ for ""}
+  _
   "You can define your own templates:"
-  [ bi: func [x y] [ajoin [b x "&" i y]]
+  [ bi: func [x y] [group [b x "&" i y]]
     bi "< bold" "italic >"
   ]
 ]
