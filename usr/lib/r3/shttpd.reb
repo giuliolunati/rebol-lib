@@ -43,7 +43,7 @@ websy/extend/set [
     ]
     insert list ".."
     sort list
-    data: make string! 256
+    data: copy {<head><meta name="viewport" content="initial-scale=1.0" /></head>}
     for-each i list [
       append data ajoin [ {<a href="} i {">} i </a> <br/>]
     ]
