@@ -12,6 +12,7 @@ usr/lib \
 usr/lib/r3 \
 usr/lib/r3/altjson.reb \
 usr/lib/r3/complex.reb \
+usr/lib/r3/csv.reb \
 usr/lib/r3/custom.reb \
 usr/lib/r3/fraction.reb \
 usr/lib/r3/html.reb \
@@ -26,6 +27,7 @@ usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
 usr/share/scripts/demo-complex.reb \
+usr/share/scripts/demo-csv.reb \
 usr/share/scripts/demo-fraction.reb \
 usr/share/scripts/demo-remark.reb \
 usr/share/scripts/test-recode.reb \
