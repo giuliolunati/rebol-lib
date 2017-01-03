@@ -55,23 +55,27 @@ html: make object! [
     s
   ]
 
-  from-tree: func [x a: b: c: t:] [
+  from-tree: func [x a: b: c: t: k: v:] [
     switch/default type-of x [
       :blank! [""]
       :string! :char! [encode x]
       :block! [ajoin map-each t x [from-tree t]]
-      :map! [
-        t: x/.tag if t = 'doc [t: 'html]
+      :map! [ probe x
+        a: to-tag "" c: _
+        for-each [k v] x [case [
+          k = '.tag [t: v]
+          k = '. [c: v]
+          k = 'id [insert a ajoin [" id=" quot v]]
+          k = 'class [insert a ajoin [" class=" quot v]]
+          k = 'style [insert a ajoin [" style=" quot style-from-map v]]
+          word? k [append a ajoin [space k "=" quot v] ]
+        ] ]
+        if t = 'doc [t: 'html]
         c: either t = 'style
-        [ from-style x/. ]
-        [ from-tree x/. ]
-        a: copy b: to-tag t
-        t: x/id
-        if t [repend a [" id=" quot t]]
-        t: x/class
-        if t [repend a [" class=" quot t]]
-        t: x/style
-        if t [repend a [" style=" quot style-from-map t]]
+        [ from-style c ]
+        [ from-tree c ]
+        insert a t
+        b: to-tag t
         either void? select x '. [
           append a #"/" b: ""
         ] [
@@ -102,9 +106,17 @@ rem: make object! [
     m/.tag: tag
     forever [
       t: first look
-      if all [word? t #"." = first to-string t][
-        t: to-refinement next to-string t
-      ]
+      if word? t [ case [
+        #"=" = last to-string t [ take look
+          t: to-string t take/last t
+          t: to-word t
+          m/:t: take args
+          continue
+        ]
+        #"." = first to-string t[
+          t: to-refinement next to-string t
+        ]
+      ] ]
       if refinement? t [ take look
         unless class [class: make block! 4]
         append class to-word t
@@ -122,9 +134,9 @@ rem: make object! [
       ]
       break
     ]
-    if id [m/id: id]
-    if class [m/class: class]
     if style [m/style: style]
+    if class [m/class: class]
+    if id [m/id: id]
     unless is-empty? [
       t: take args
       if block? t [t: reduce t]
