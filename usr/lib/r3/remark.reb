@@ -60,7 +60,7 @@ html: make object! [
       :blank! [""]
       :string! :char! [encode x]
       :block! [ajoin map-each t x [from-tree t]]
-      :map! [ probe x
+      :map! [
         a: to-tag "" c: _
         for-each [k v] x [case [
           k = '.tag [t: v]
@@ -155,9 +155,10 @@ rem: make object! [
 
   ;tag:  tag-func tag   is-empty?
   doc:   tag-func doc   false
-  body:  tag-func body  false
   head:  tag-func head  false
   title: tag-func title false
+  meta:  tag-func meta  true
+  body:  tag-func body  false
   div:   tag-func div   false
   h1:    tag-func h1    false
   h2:    tag-func h2    false
@@ -196,6 +197,13 @@ rem: make object! [
       '.tag 'style
       '. s
     ]
+  ]
+
+  viewport: func [content] [
+    if number? content [
+      content: ajoin ["initial-scale=" content]
+    ]
+    meta name="viewport" content= content
   ]
 ]
 
