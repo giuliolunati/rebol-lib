@@ -4,18 +4,19 @@ REBOL [
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
   Description: "Markup conversion"
-  Exports: [html-from-rem tree-from-rem]
+  Exports: [html-from-rem load-rem]
 ]
 
 html: make object! [
-  ch&rs: charset "<&>"
+  markup-char: charset "<&>"
+
   encode: func [x [string! char!] r: t:] [
     if char? x [x: to-string x]
-    unless find x ch&rs [return x]
+    unless find x markup-char [return x]
     r: make string! to-integer (1.1 * length x +1)
     parse x [
       some [
-        copy t [to ch&rs | to end] (append r t)
+        copy t [to markup-char | to end] (append r t)
         [ #"&" (append r "&amp;")
         | #"<" (append r "&lt;")
         | #">" (append r "&gt;")
@@ -29,7 +30,7 @@ html: make object! [
     ajoin [#""" x #"""]
   ]
 
-  style-from-map: func [m s: k: v:] [
+  mold-style-map: func [m s: k: v:] [
     s: _
     for-each [k v] m [
       k: ajoin [k #":"]
@@ -38,7 +39,7 @@ html: make object! [
     ] s
   ]
 
-  from-style: func [x r: k: v: s:] [
+  mold-style-tag: func [x r: k: v: s:] [
     s: _
     for-each [k v] x [
       r: _
@@ -50,16 +51,16 @@ html: make object! [
       either s
       [ append s r ]
       [ s: r ]
-      repend s [" { " style-from-map v " } "]
+      repend s [" { " mold-style-map v " } "]
     ]
     s
   ]
 
-  from-tree: func [x a: b: c: t: k: v:] [
+  mold: func [x a: b: c: t: k: v:] [
     switch/default type-of x [
       :blank! [""]
       :string! :char! [encode x]
-      :block! [ajoin map-each t x [from-tree t]]
+      :block! [ajoin map-each t x [mold t]]
       :map! [
         a: to-tag "" c: _
         for-each [k v] x [case [
@@ -67,13 +68,13 @@ html: make object! [
           k = '. [c: v]
           k = 'id [insert a ajoin [" id=" quot v]]
           k = 'class [insert a ajoin [" class=" quot v]]
-          k = 'style [insert a ajoin [" style=" quot style-from-map v]]
+          k = 'style [insert a ajoin [" style=" quot mold-style-map v]]
           word? k [append a ajoin [space k "=" quot v] ]
         ] ]
         if t = 'doc [t: 'html]
         c: either t = 'style
-        [ from-style c ]
-        [ from-tree c ]
+        [ mold-style-tag c ]
+        [ mold c ]
         insert a t
         b: to-tag t
         either void? select x '. [
@@ -93,7 +94,7 @@ rem: make object! [
   group: :lib/reduce
   func: :lib/func
 
-  emit-tag: func [
+  load-tag: func [
     tag [word!]
     is-empty? [logic!]
     args [any-value! <...>]
@@ -110,7 +111,7 @@ rem: make object! [
         #"=" = last to-string t [ take look
           t: to-string t take/last t
           t: to-word t
-          m/:t: take args
+          m/:t: to-string take look
           continue
         ]
         #"." = first to-string t[
@@ -125,7 +126,7 @@ rem: make object! [
       if set-word? t [ take look
         t: to-word t
         unless style [style: make map! 8]
-        style/:t: take args
+        style/:t: take look
         continue
       ]
       if issue? t [ take look
@@ -145,34 +146,24 @@ rem: make object! [
     m
   ]
 
-  tag-func: func [
-    'tag [word!]
-    is-empty? [logic!]
-    return: [function!]
+  def-tags: proc [
+    'empty?
+    :look [set-word! bar! <...>]
+    t:
   ][
-    specialize 'emit-tag [tag: tag is-empty?: is-empty?]
+    while [set-word? t: take look] [
+      t: to-word t
+      set t specialize :load-tag [tag: t is-empty?: empty? = 'empty]
+    ]
   ]
+  
+  ;; we need tags to appear here as set-word,
+  ;; else we can't use them in subsequent definitions
+  ;; (e.g. see below 'meta used in 'viewport)
 
-  ;tag:  tag-func tag   is-empty?
-  doc:   tag-func doc   false
-  head:  tag-func head  false
-  title: tag-func title false
-  meta:  tag-func meta  true
-  body:  tag-func body  false
-  div:   tag-func div   false
-  h1:    tag-func h1    false
-  h2:    tag-func h2    false
-  h3:    tag-func h3    false
-  h4:    tag-func h4    false
-  h5:    tag-func h5    false
-  h6:    tag-func h6    false
-  p:     tag-func p     false
-  span:  tag-func span  false
-  b:     tag-func b     false
-  i:     tag-func i     false
-  img:   tag-func img   true 
-  br:    tag-func br    true 
-  hr:    tag-func hr    true 
+  def-tags empty br: hr: img: meta: |
+
+  def-tags non-empty b: body: code: div: doc: h1: h2: h3: h4: h5: h6: i: head: p: pre: span: title: |
 
   style: func [code b: t: k: v: s: selector!:] [
     selector!: [
@@ -207,19 +198,15 @@ rem: make object! [
   ]
 ]
 
-tree-from-rem: func[x /secure t:] [
+load-rem: func[x /secure t:] [
   either secure
   [ t: do bind/new x rem ]
   [ t: do bind x rem ]
   t
 ]
 
-html-from-tree: :html/from-tree
+mold-html: :html/mold
 
-html-from-rem: func [x /secure] [
-  html-from-tree apply :tree-from-rem [
-    x: x secure: secure
-  ]
-]
+html-from-rem: chain [:load-rem :html/mold]
 
 ;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:

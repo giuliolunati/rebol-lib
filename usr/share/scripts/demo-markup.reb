@@ -26,7 +26,7 @@ demo [
   "Import module:"
   (import 'markup)
   _
-  "TO-HTML converts to HTML:"
+  "HTML-FROM-REM converts to HTML:"
   ["&, <, > are &-coded"]
   "(NOTE HTML encoding)"
   _
@@ -52,7 +52,7 @@ demo [
   ] ]
   _
   "No 'HTML, use 'DOC instead:"
-  [doc [head _ body _]]
+  [doc [head viewport 1 body _]]
   {NOTE '_ for ""}
   _
   "You can define your own templates:"
