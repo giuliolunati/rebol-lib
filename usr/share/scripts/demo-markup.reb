@@ -24,7 +24,7 @@ demo: func [code] [
 ]
 demo [
   "Import module:"
-  (import 'remark)
+  (import 'markup)
   _
   "TO-HTML converts to HTML:"
   ["&, <, > are &-coded"]

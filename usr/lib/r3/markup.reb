@@ -1,9 +1,9 @@
 REBOL [
-  Name: 'remark
+  Name: 'markup
   Type: module
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
-  Description: "ReMark reader"
+  Description: "Markup conversion"
   Exports: [html-from-rem tree-from-rem]
 ]
 

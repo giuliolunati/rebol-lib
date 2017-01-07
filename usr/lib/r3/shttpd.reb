@@ -8,7 +8,7 @@ REBOL [
   ; Needs: websy
 ]
 
-remark: import 'remark
+markup: import 'markup
 websy: import 'websy
 config: websy/config
 
