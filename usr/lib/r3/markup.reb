@@ -114,15 +114,12 @@ rem: make object! [
           m/:t: to-string take look
           continue
         ]
-        #"." = first to-string t[
-          t: to-refinement next to-string t
+        #"." = first to-string t [ take look
+          unless class [class: make block! 4]
+          append class to-word next to-string t
+          continue
         ]
       ] ]
-      if refinement? t [ take look
-        unless class [class: make block! 4]
-        append class to-word t
-        continue
-      ]
       if set-word? t [ take look
         t: to-word t
         unless style [style: make map! 8]

@@ -39,15 +39,14 @@ demo [
   [p [b "bold" "normal" br i "italic" ]]
   {They accept optional args before content:
   - issue for id
-  - .word or refinement for class
-  -- (NOTE: .foo and /foo are equivalent)
+  - .word for class
   - set-word + value for css style
   - word= for attribute}
-  [p .foo1 #bar width= 100 font-size: "10pt" /foo2 color: 'red "content"]
+  [p .foo1 #bar width= 100 font-size: "10pt" .foo2 color: 'red "content"]
   _
   "STYLE tag has its own (limited) syntax:"
   [style [
-    #foo .bar /foobar font-size: 95%
+    #foo .bar .foobar font-size: 95%
     p h1 text-align: center border: "1pt red solid"
   ] ]
   _
