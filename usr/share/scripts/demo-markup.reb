@@ -7,10 +7,10 @@ demo: func [code] [
         ] [print x]
       ]
       block? code [
-        print [">> html-from-rem" mold code]
-        print "==="
+        probe code
+        print "==>"
         print html-from-rem/secure code
-        print "---"
+        print "==="
       ]
       group? code [
         code: to block! code
@@ -53,6 +53,9 @@ demo [
   "No 'HTML, use 'DOC instead:"
   [doc [head viewport 1 body _]]
   {NOTE '_ for ""}
+  _
+  "FILE!/URL! -> HREF/SRC:"
+  [a http://www.example.com img %img/ex.png]
   _
   "You can define your own templates:"
   [ bi: func [x y] [group [b x "&" i y]]

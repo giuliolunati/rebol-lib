@@ -130,6 +130,10 @@ rem: make object! [
         id: next to-string t
         continue
       ]
+      if any [url? t file? t] [ take look
+        either tag = 'a [m/href: t] [m/src: t]
+        continue
+      ]
       break
     ]
     if style [m/style: style]
@@ -160,7 +164,7 @@ rem: make object! [
 
   def-tags empty br: hr: img: meta: |
 
-  def-tags non-empty b: body: code: div: doc: h1: h2: h3: h4: h5: h6: i: head: p: pre: span: title: |
+  def-tags non-empty a: b: body: code: div: doc: h1: h2: h3: h4: h5: h6: i: head: p: pre: span: title: |
 
   style: func [code b: t: k: v: s: selector!:] [
     selector!: [
