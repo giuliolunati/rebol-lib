@@ -29,7 +29,7 @@ websy/extend/set [
     "r" rebol
     "r3" rebol
     "reb" rebol
-    "rem" remark
+    "rem" rem
     "txt" txt
   ]
 
@@ -88,11 +88,14 @@ websy/extend/set [
       either error? data: trap [read file] [
         return build-error-response 400 request join-of "Cannot read file " file
       ] [
-        if mime = 'remark [
-          mime: either error? data: trap [
-            remark/html-from-rem load data
-          ] [data: form data 'txt]
-          ['html]
+        if any [mime = 'rem all [
+          mime = 'html 
+          "REBOL" = uppercase to-string copy/part data 5
+        ] ] [
+          either error? data: trap [
+            markup/html-from-rem load data
+          ] [data: form data mime: 'txt]
+          [mime: 'html]
         ]
         return reduce [200 mime data]
       ]
