@@ -93,7 +93,7 @@ websy/extend/set [
           "REBOL" = uppercase to-string copy/part data 5
         ] ] [
           either error? data: trap [
-            markup/html-from-rem load data
+            markup/html-rem load data
           ] [data: form data mime: 'txt]
           [mime: 'html]
         ]

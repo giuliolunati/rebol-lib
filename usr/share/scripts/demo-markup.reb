@@ -7,9 +7,9 @@ demo: func [code] [
         ] [print x]
       ]
       block? code [
-        probe code
-        print "==>"
-        print html-from-rem/secure code
+        print [">>" mold/only code]
+        print "---"
+        probe do code
         print "==="
       ]
       group? code [
@@ -26,40 +26,45 @@ demo [
   "Import module:"
   (import 'markup)
   _
-  "HTML-FROM-REM converts to HTML:"
-  ["&, <, > are &-coded"]
-  "(NOTE HTML encoding)"
+  "Example of ReM code:"
+  {rem [p ["paragraph" br "breakline" ]]}
   _
-  "NOTE - only last node is returned:"
-  ["bold" " normal" space "italic"]
-  "But you can use GROUP:"
-  [group ["bold" " normal" space "italic"]]
+  "HTML|REM convert it to HTML:"
+  [html-rem [rem [p ["paragraph" br "breakline" ]]]]
   _
-  "Tags are (variadic) functions..."
-  [p [b "bold" "normal" br i "italic" ]]
-  {They accept optional args before content:
-  - issue for id
-  - .word for class
-  - set-word + value for css style
-  - word= for attribute}
-  [p .foo1 #bar width= 100 font-size: "10pt" .foo2 color: 'red "content"]
+  {[REM [...]] is a document,
+  while [REM ...] is a fragment:}
+  [html-rem [rem p ["paragraph" br "breakline" ]]]
+  _
+  {Text is wrote as strings, tags as words:}
+  [html-rem [rem b "bold" hr i "italic"]]
+  _
+  "Spaces must be explicitly inserted in strings, or with SPACE:"
+  [html-rem [rem b "bold" space "normal " i "italic"]]
+  [html-rem [rem i "this" "has" b "no" "spaces"]]
+  _
+  [html-rem [rem "< & > are straightforward."]]
+  {Tags accept optional attributes before content:
+  - attribute: /refinement value
+  - style: set-word: value [...] }
+  [html-rem [rem p /width 100 font-size: ajoin [10 "pt"] color: 'red "content"]]
+  "NOTE: values are evaluated!"
+  _
+  {Other special cases:
+  - id: #issue
+  - class: .word [...]
+  - href, src: %file or url://...}
+  [html-rem [rem a #foo http://www.example.com img .bar1 .bar2 %test.png]]
   _
   "STYLE tag has its own (limited) syntax:"
-  [style [
+  [html-rem [rem style [
     #foo .bar .foobar font-size: 95%
     p h1 text-align: center border: "1pt red solid"
-  ] ]
+  ] ] ]
   _
-  "No 'HTML, use 'DOC instead:"
-  [doc [head viewport 1 body _]]
-  {NOTE '_ for ""}
-  _
-  "FILE!/URL! -> HREF/SRC:"
-  [a http://www.example.com img %img/ex.png]
-  _
-  "You can define your own templates:"
-  [ bi: func [x y] [group [b x "&" i y]]
-    bi "< bold" "italic >"
-  ]
+  "You can define your own templates before REM:"
+  [html-rem [bi: func [x y] [rem b x "&" i y]
+    rem [bi "< bold" "italic >"]
+  ]]
 ]
 ;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:

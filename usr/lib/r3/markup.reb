@@ -4,7 +4,7 @@ REBOL [
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
   Description: "Markup conversion"
-  Exports: [html-from-rem load-rem]
+  Exports: [html-rem load-rem mold-html]
 ]
 
 html: make object! [
@@ -64,7 +64,7 @@ html: make object! [
       :map! [
         a: to-tag "" c: _
         for-each [k v] x [case [
-          k = '.tag [t: v]
+          k = 'tag! [t: v]
           k = '. [c: v]
           k = 'id [insert a ajoin [" id=" quot v]]
           k = 'class [insert a ajoin [" class=" quot v]]
@@ -75,103 +75,125 @@ html: make object! [
         c: either t = 'style
         [ mold-style-tag c ]
         [ mold c ]
-        insert a t
         b: to-tag t
-        either void? select x '. [
-          append a #"/" b: ""
+        either 'EMPTY-TAG = get :t [
+          append a #"/" b: "" t: to-word t
         ] [
           b: back insert b #"/"
         ]
+        insert a t
         ajoin [a c b]
       ]
-    ] [print ["invalid" x] quit]
+    ] [print ["Invalid" x type-of x] quit]
   ]
 ]
 
 rem: make object! [
   ;; available with /SECURE:
   space: :lib/space
-  group: :lib/reduce
   func: :lib/func
 
-  load-tag: func [
-    tag [word!]
-    is-empty? [logic!]
+  doc: head: title: style: script: body:
+  div: h1: h2: h3: h4: h5: h6: p:
+  span: a: b: i:
+  table: tr: td:
+  'TAG
+
+  meta: hr: br: img:
+  'EMPTY-TAG
+
+  rem: func [
     args [any-value! <...>]
     :look [any-value! <...>]
-    return: [map!]
-    id: class: style: m: t:
+    x: b: m: read-1:
   ][
-    class: id: style: _
-    m: make map! 8
-    m/.tag: tag
-    forever [
-      t: first look
-      if word? t [ case [
-        #"=" = last to-string t [ take look
-          t: to-string t take/last t
+    read-1: func [
+      id: class: style: m: t: w:
+    ][
+      w: first look
+      if any [path? :w all [word? :w
+        'TAG != get :w 'EMPTY-TAG != get :w
+      ] ] [return take args]
+      unless word? :w [return take look]
+      take look
+      m: make map! 8
+      m/tag!: :w
+      class: id: style: _
+      forever [
+        t: first look
+        if word? t [
+          if #"." = first to-string t [ take look
+            unless class [class: make block! 4]
+            append class to-word next to-string t
+            continue
+          ]
+          break
+        ]
+        if refinement? t [ take look
           t: to-word t
-          m/:t: to-string take look
+          m/:t: read-1
+          ; ^--- for non-HTML applications:
+          ; value of an attribute may be a node!
           continue
         ]
-        #"." = first to-string t [ take look
-          unless class [class: make block! 4]
-          append class to-word next to-string t
+        if set-word? t [ take look
+          t: to-word t
+          unless style [style: make map! 8]
+          style/:t: take args
           continue
         ]
-      ] ]
-      if set-word? t [ take look
-        t: to-word t
-        unless style [style: make map! 8]
-        style/:t: take look
-        continue
+        if issue? t [ take look
+          id: next to-string t
+          continue
+        ]
+        if any [url? t file? t] [ take look
+          either w = 'a [m/href: t] [m/src: t]
+          continue
+        ]
+        break
       ]
-      if issue? t [ take look
-        id: next to-string t
-        continue
+      if style [m/style: style]
+      if class [m/class: class]
+      if id [m/id: id]
+      if 'TAG = get :w [
+        case [
+          block? t [
+            insert x: take look 'rem ; DIRTY HACK!
+            t: do x
+            take x
+          ]
+          string? t [take look]
+          any [word? t path? t] [
+            t: read-1
+          ]
+        ]
+        m/.: t
       ]
-      if any [url? t file? t] [ take look
-        either tag = 'a [m/href: t] [m/src: t]
-        continue
-      ]
-      break
+      m
     ]
-    if style [m/style: style]
-    if class [m/class: class]
-    if id [m/id: id]
-    unless is-empty? [
-      t: take args
-      if block? t [t: reduce t]
-      m/.: t
+
+    x: first look
+    if block? x [
+      m: make map! 2
+      m/tag!: 'doc
+      insert x: take look 'rem ; DIRTY HACK!
+      m/.: do x
+      take x
+      return m
     ]
-    m
+    b: make block! 8
+    forever [
+      x: first look
+      unless x [break]
+      append b read-1
+    ]
+    if 1 < length b [return b]
+    b/1
   ]
-
-  def-tags: proc [
-    'empty?
-    :look [set-word! bar! <...>]
-    t:
-  ][
-    while [set-word? t: take look] [
-      t: to-word t
-      set t specialize :load-tag [tag: t is-empty?: empty? = 'empty]
-    ]
-  ]
-  
-  ;; we need tags to appear here as set-word,
-  ;; else we can't use them in subsequent definitions
-  ;; (e.g. see below 'meta used in 'viewport)
-
-  def-tags empty br: hr: img: meta: |
-
-  def-tags non-empty a: b: body: code: div: doc: h1: h2: h3: h4: h5: h6: i: head: p: pre: span: title: |
 
   style: func [code b: t: k: v: s: selector!:] [
     selector!: [
-      set t [word! | issue! | refinement!]
-      ( if refinement? t [
-          t: to-word back change to-string t #"."
-      ])
+      set t [word! | issue!]
     ]
     s: make block! 8
     parse code [any [
@@ -186,7 +208,7 @@ rem: make object! [
       (append s t)
     ] ]
     make map! reduce [
-      '.tag 'style
+      'tag! 'style
       '. s
     ]
   ]
@@ -195,19 +217,20 @@ rem: make object! [
     if number? content [
       content: ajoin ["initial-scale=" content]
     ]
-    meta name="viewport" content= content
+    rem meta /name "viewport" /content content
   ]
 ]
 
-load-rem: func[x /secure t:] [
+load-rem: func[x [block! string!] /secure t: ] [
+  if string? x [return x]
   either secure
-  [ t: do bind/new x rem ]
-  [ t: do bind x rem ]
-  t
+  [ x: bind/new x rem ]
+  [ x: bind x rem ]
+  do x
 ]
 
 mold-html: :html/mold
 
-html-from-rem: chain [:load-rem :html/mold]
+html-rem: chain [:load-rem :html/mold]
 
 ;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:
