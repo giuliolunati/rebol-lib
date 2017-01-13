@@ -1,0 +1,105 @@
+REBOL []
+demo: func [x /only t: b:] [
+  t: load-rem x
+  rem
+    p i "ReM code:"
+    div .code mold/only x
+    p i "HTML equivalent:"
+    div .code mold-html t
+    p i "Display:"
+    div .sample t
+    br
+]
+
+tit: "ReM format tutorial"
+rem [
+head [
+  viewport 1
+  title tit
+  style [
+    body  font-size: "12pt"
+    h1  text-align: center
+    div padding: "1ex"
+    .sample  border: "2px solid gray"
+    .code  background: #dddddd
+      font-family: monospace
+      font-size: "11pt"
+      white-space: pre-wrap
+  ]
+]
+body [
+
+h1 tit
+
+h2 ["ReM code"]
+
+p {ReM code is processed by LOAD-REM, that binds it to REM context (in MARKUP module), then DOes it and returns a document tree. MOLD-HTML reads that tree and outputs HTML text. HTML-REM is a chain of LOAD-REM and MOLD-HTML.}
+
+p {ReM has structure: [setup REM markup | post-process] or [setup REM [markup] post-process]. The first form produces a "fragment" (no DOC root node), the second produces a whole document, with DOC root node.}
+p {Setup and post-process are optional and normally evaluated. In setup you can define things, in post-process you can manipulate the generated tree.
+}
+p {The core of ReM format is markup: it's not normally evaluated, instead is processed by REM variadic function. Let's describe markup syntax.}
+
+h2 "Text"
+
+demo [rem "Text must be quoted; <, &, >, are ok."]
+demo [rem {Space must be explicitly inserted}
+  { in strings } {or with 'space. } space {This} {is} {one} {long} {word.}
+]
+
+h2 "Tags"
+
+p  "Tags are words; content is a string or a block."
+
+demo [rem
+  h1 "Title"
+  p [{paragraph with breakline} br
+    b {bold} { normal } i {italic}
+  ]
+]
+
+p {After tag name you can add attributes:}
+
+h2 {Generic attributes}
+
+p [{Generic attributes are in the form } i {/refinement value} { (value is evaluated)}]
+
+demo [rem p /align first["right" "left"] [
+  {first line} br {second line}
+] ]
+
+h3 "Styles"
+
+p [{Style properties are in the form } i {set-word: value} { (value is evaluated.)}]
+
+demo [rem span font-size: to-percent 7 / 4 color: 'red "Great red text"]
+
+p {Style tag has its own syntax -- see next example.}
+
+h3 "Ids, classes and STYLE tag"
+
+p [{Ids are in the form } i "#id" {, classes are } i ".class"]
+
+demo [rem
+  style [
+    #bluey .bluey color: "blue" background: yellow
+    .big font-size: 200%
+  ]
+  span #bluey "Blue on yellow"
+  br
+  span .bluey .big "Big blue on yellow"
+]
+
+h2 "HREF and SRC"
+
+p "URLs and FILES are HREF and SRC attributes:"
+
+demo [rem
+  a https://github.com/metaeducation/ren-c
+  img http://giuliolunati.altervista.org/r3/ren-c-logo.png height: "3.5ex" space
+  a %/ font-size: "200%" "ROOT"
+]
+
+] ;body
+] ;doc
+;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:
