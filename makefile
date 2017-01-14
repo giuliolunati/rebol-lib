@@ -1,22 +1,17 @@
 PACKAGE = rebol-lib
 VERSION = 0.0.1
-PLATFORM = kbox
+PLATFORM = all
+ARCH = all
 DESCRIPTION = "some Rebol libraries"
 DEB = ${PACKAGE}_${VERSION}_${PLATFORM}.deb
 FILES = \
-usr \
-usr/bin \
 usr/bin/rebol.r \
-usr/bin/rebol3.sh \
-usr/lib \
-usr/lib/r3 \
 usr/lib/r3/altjson.reb \
 usr/lib/r3/complex.reb \
 usr/lib/r3/csv.reb \
 usr/lib/r3/custom.reb \
 usr/lib/r3/fraction.reb \
 usr/lib/r3/html.reb \
-usr/lib/r3/lest.reb \
 usr/lib/r3/markup.reb \
 usr/lib/r3/profile.reb \
 usr/lib/r3/recode.reb \
@@ -26,23 +21,19 @@ usr/lib/r3/sl4a.reb \
 usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
 usr/lib/r3/websy.reb \
-usr/share \
-usr/share/doc \
-usr/share/doc/r3 \
 usr/share/doc/r3/rem-tutorial.html \
-usr/share/scripts \
 usr/share/scripts/demo-complex.reb \
 usr/share/scripts/demo-csv.reb \
 usr/share/scripts/demo-fraction.reb \
 usr/share/scripts/demo-markup.reb \
-usr/share/scripts/test-recode.reb \
+usr/share/scripts/factors.reb \
 usr/share/scripts/shttpd.reb
 
-${DEB}: data.tar.gz control.tar.gz debian-binary
-	ar r $@ debian-binary data.tar.gz control.tar.gz
+${DEB}: data.tar.gz control.tar.gz debian-binary makefile
+	ar r $@ debian-binary control.tar.gz data.tar.gz
 
-data.tar.gz: ${FILES}
-	tar cf data.tar ${FILES}
+data.tar.gz: ${FILES} clean-usr
+	tar cf data.tar usr
 	rm -f data.tar.gz
 	gzip data.tar
 
@@ -55,10 +46,11 @@ debian-binary:
 	echo 2.0 > $@
 
 control:
-	echo -e \
-	"Package: ${PACKAGE}\n\
-	 Version: ${VERSION}\n\
-	Description:" > $@
+	echo "Package: ${PACKAGE}" > $@
+	echo "Version: ${VERSION}" >> $@
+	echo "Architecture: ${ARCH}" >> $@
+	echo "Description:" >> $@
+	echo "" >> $@
 
 .PHONY: sync
 sync:
@@ -104,4 +96,20 @@ comp:
 
 .PHONY: clean
 clean:
-	rm ${DEB} control.tar.gz data.tar.gz
+	rm -f ${DEB} control.tar.gz data.tar.gz
+	rm -f control debian-binary
+
+.PHONY: clean-usr
+clean-usr: makefile
+	@ rm _
+	@ for i in ${FILES}; do echo $$i >> _; done
+	@ find usr -type f >> _
+	@ for i in `sort _  | uniq -u`; do\
+		case $$i in\
+		*~) rm -f $$i ;;\
+		*)  rm -i $$i ;;\
+		esac; done
+	@ rm _
+
+
+# vim: set ts=2 sts=2 sw=2 :
