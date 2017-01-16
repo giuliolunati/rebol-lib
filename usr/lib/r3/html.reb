@@ -3,6 +3,7 @@ REBOL [
 	Type: 'module
 	Name: 'html
 	Exports: [
+		load-html
 		split-html
 	]
 	Author: "giuliolunati@gmail.com"
@@ -24,7 +25,27 @@ REBOL [
 		w+: charset [ "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" #"^(B7)" #"^(C0)" -#"^(D6)" #"^(D8)" - #"^(F6)" #"^(F8)" - #"^(037D)" #"^(037F)" - #"^(1FFF)" #"^(200C)" - #"^(200D)" #"^(203F)" - #"^(2040)" #"^(2070)" - #"^(218F)" #"^(2C00)" - #"^(2FEF)" #"^(3001)" - #"^(D7FF)" #"^(f900)" - #"^(FDCF)" #"^(FDF0)" - #"^(FFFD)" ]
 		[w1 any w+]
 	]
-;=== FUNCTIONS === 
+;=== END RULES === 
+
+is-empty: make map! [
+	! true
+	? true
+	area true
+	base true
+	br true
+	col true
+	embed true
+	hr true
+	img true
+	input true
+	keygen true
+	link true
+	meta true
+	param true
+	source true
+	track true
+	wbr true
+]
 
 ;; from 'text module
 unquote-string: function [
@@ -82,7 +103,7 @@ split-html: function [data [string!]] [
 				k: to word! k
 				if k = 'style [
 					b: make block! 8
-					parse probe v [ any [
+					parse v [ any [
 						any space
 						copy n name! any space! #":" any space
 						copy k to [#";" | end] opt #";"
@@ -126,6 +147,53 @@ split-html: function [data [string!]] [
 		copy t to end (emit t)
 	]
 	either parse to string! data html! [ret] [return false]
+]
+
+load-html: func [
+		x [block! string!]
+		get-tag: ret: t:
+	][
+	get-tag: func [c: t: m:] [
+		m: make map! 4
+		t: x/1  x: next x  m/.tag: t
+		if any [t = '?  t = '!] [
+			unless tail? x [m/.: x/1  x: next x]
+			return m
+		]
+		if block? x/1 [x: next x]
+		if is-empty/:t [print t return m]
+		c: make block! 8
+		forever [
+			case [
+			  tail? x [break]
+			  refinement? x/1 [
+					if t = to-word x/1 [x: next x  break]
+					fail ajoin ["unmatched " t space x/1]
+				]
+				word? x/1 [append c get-tag]
+				string? x/1 [append c x/1  x: next x]
+			]
+		]
+		switch length c [
+		  1 [c: c/1]
+			0 [c: _]
+		]
+		if c [m/.: c]
+		m
+	]
+
+	if string? x [x: split-html x]
+	ret: make block! 8
+	forever [
+		if tail? x [break]
+		t: x/1
+		case [
+		  string? t [append ret t x: next x]
+		  word? t [append ret  get-tag]
+			true [fail ajoin ["invalid " t]]
+		]
+	]
+	ret
 ]
 
 ; vim: syn=rebol sw=2 ts=2 sts=2:
