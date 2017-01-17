@@ -4,8 +4,10 @@ REBOL [
   Name: 'html
   Exports: [
     load-html
+    mold-html
     split-html
   ]
+  Needs: [text]
   Author: "giuliolunati@gmail.com"
   Version: 0.1.1
 ]
@@ -45,17 +47,6 @@ is-empty: make map! [
   source true
   track true
   wbr true
-]
-
-;; from 'text module
-unquote-string: function [
-    {Remove \ escape and " quotes}
-    s
-  ] [
-  parse s [ any [
-    to #"\" remove skip skip
-  ] ]
-  copy/part next s back tail s
 ]
 
 split-html: function [data [string!]] [
@@ -158,12 +149,12 @@ load-html: func [
   get-tag: func [c: t: m:] [
     m: make block! 8
     t: x/1  x: next x
-		append m 'tag!
-		append/only m t
+    append m 'tag!
+    append/only m t
     if any [t = '?  t = '!] [
       unless tail? x [
         append m '.
-				append m x/1
+        append m x/1
         x: next x
       ]
       return m
@@ -208,4 +199,60 @@ load-html: func [
   ret
 ]
 
-; vim: syn=rebol sw=2 ts=2 sts=2:
+mold-style: func [
+    x [block! string!]
+    ret:
+  ][
+  if string? x [return x]
+  ret: make string! 32
+  foreach [k v] x [
+    if not empty? ret [append ret "; "]
+    append ret k
+    append ret ": "
+    append ret quote-string/single v
+  ]
+  ret
+]
+
+mold-string: func [x] [x]
+
+mold-html: func [
+    x [block! string!]
+    ret: tag:
+  ] [
+  ret: make string! 512
+  if string? x [x: load-html x]
+  either 'tag! = x/1 [
+    append ret #"<"
+    foreach [k v] x [case [
+      k = 'tag! [append ret tag: v]
+      k = '. [
+        assert [not is-empty/:v]
+        append ret #">"
+        append ret either string? v
+        [ mold-string v ]
+        [ mold-html v ]
+        append ret "</"
+        append ret tag
+        append ret #">"
+      ]
+      true [
+        append ret space 
+        append ret k
+        append ret #"="
+        append ret quote-string
+          either k = 'style [mold-style v] [v]
+      ]
+    ] ]
+    if is-empty/:tag [append ret "/>"]
+  ] [
+    forall x [
+      either string? x/1
+      [ append ret x/1 ]
+      [ append ret mold-html x/1 ]
+    ]
+  ]
+  ret
+]
+
+; vim: syn=rebol sw=2 ts=2 sts=2 expandtab:
