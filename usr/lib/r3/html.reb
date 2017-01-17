@@ -52,7 +52,7 @@ is-empty: make map! [
 split-html: function [data [string!]] [
   a: b: k: n: t: v: _
   ret: make block! 32
-  emit: func [x /local t] [
+  emit: func [x t:] [
     if x = "" [return _]
     if char? x [x: to string! x]
     if string? x [
@@ -71,9 +71,10 @@ split-html: function [data [string!]] [
         )
       ]
     | copy t some alpha! (
-        emit switch/default t [
+        emit switch t [
           "nbsp" [#"^(a0)"]
-        ] ajoin[#"&" t #";"]
+          (ajoin [#"&" t #";"])
+        ]
       )
     ]
     opt #";"
@@ -149,8 +150,8 @@ load-html: func [
   get-tag: func [c: t: m:] [
     m: make block! 8
     t: x/1  x: next x
-    append m 'tag!
-    append/only m t
+    append m 'tag
+    append/only m to string! t
     if any [t = '?  t = '!] [
       unless tail? x [
         append m '.
@@ -214,7 +215,18 @@ mold-style: func [
   ret
 ]
 
-mold-string: func [x] [x]
+quote-html: func [
+    x [string!] q:
+  ] [
+  q: charset "<&>"
+  parse x [any [to q
+		[ #"&" insert "amp;"
+		| remove #"<" insert "&lt;"
+		| remove #">" insert "&gt;"
+		]
+  ] ]
+  x
+]
 
 mold-html: func [
     x [block! string!]
@@ -222,15 +234,15 @@ mold-html: func [
   ] [
   ret: make string! 512
   if string? x [x: load-html x]
-  either 'tag! = x/1 [
+  either 'tag = x/1 [
     append ret #"<"
     foreach [k v] x [case [
-      k = 'tag! [append ret tag: v]
+      k = 'tag [append ret tag: to word! v]
       k = '. [
         assert [not is-empty/:v]
         append ret #">"
         append ret either string? v
-        [ mold-string v ]
+        [ v ]
         [ mold-html v ]
         append ret "</"
         append ret tag
