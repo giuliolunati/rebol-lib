@@ -56,7 +56,7 @@ split-html: function [data [string!]] [
     if x = "" [return _]
     if char? x [x: to string! x]
     if string? x [
-      t: last ret
+      t: to-value last ret
       if string? t [return append t x]
     ]
     append/only ret x
@@ -73,7 +73,10 @@ split-html: function [data [string!]] [
     | copy t some alpha! (
         emit switch t [
           "nbsp" [#"^(a0)"]
-          (ajoin [#"&" t #";"])
+          "amp" [#"&"]
+          "lt" [#"<"]
+          "gt" [#">"]
+          (to tag! t)
         ]
       )
     ]
@@ -171,7 +174,10 @@ load-html: func [
           fail ajoin ["unmatched " t space x/1]
         ]
         word? x/1 [append/only c get-tag]
-        string? x/1 [append/only c x/1  x: next x]
+        any [string? x/1 tag? x/1] [
+          append c x/1  x: next x
+        ]
+        true [fail ajoin ["invalid " x/1]]
       ]
     ]
     switch length c [
@@ -188,8 +194,8 @@ load-html: func [
     if tail? x [break]
     t: x/1
     case [
-      string? t [append/only ret t x: next x]
       word? t [append/only ret get-tag]
+      any [string? t tag? t] [append/only ret t x: next x]
       true [fail ajoin ["invalid " t]]
     ]
   ]
@@ -229,11 +235,13 @@ quote-html: func [
 ]
 
 mold-html: func [
-    x [block! string!]
+    x [block! string! tag!]
     ret: tag:
   ] [
+  if string? x [return quote-html x]
+  if tag? x [return ajoin [#"&" to string! x #";"]]
+  assert [block? x]
   ret: make string! 512
-  if string? x [x: load-html x]
   either 'tag = x/1 [
     append ret #"<"
     foreach [k v] x [case [
@@ -241,9 +249,7 @@ mold-html: func [
       k = '. [
         assert [not is-empty/:v]
         append ret #">"
-        append ret either string? v
-        [ v ]
-        [ mold-html v ]
+        append ret mold-html v
         append ret "</"
         append ret tag
         append ret #">"
@@ -259,9 +265,7 @@ mold-html: func [
     if is-empty/:tag [append ret "/>"]
   ] [
     forall x [
-      either string? x/1
-      [ append ret x/1 ]
-      [ append ret mold-html x/1 ]
+      append ret mold-html x/1
     ]
   ]
   ret

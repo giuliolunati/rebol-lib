@@ -1,6 +1,9 @@
-import 'complex
+import 'html
 
-enable-customize self
+probe
+mold-html
+load-html
+split-html
+{<p>--&amp;--&lt--&gt--&gurz--</p>}
 
-print i 2 + i 3
-; vim: set syn=rebol ts=2 sw=2 sts=2:
+; vim: syn=rebol sw=2 ts=2 sts=2:
