@@ -25,6 +25,7 @@ usr/share/doc/r3/rem-tutorial.html \
 usr/share/scripts/demo-complex.reb \
 usr/share/scripts/demo-csv.reb \
 usr/share/scripts/demo-fraction.reb \
+usr/share/scripts/demo-html.reb \
 usr/share/scripts/demo-rem.reb \
 usr/share/scripts/factors.reb \
 usr/share/scripts/shttpd.reb
