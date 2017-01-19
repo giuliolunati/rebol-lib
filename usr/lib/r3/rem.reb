@@ -1,91 +1,10 @@
 REBOL [
-  Name: 'markup
+  Name: 'rem
   Type: module
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
-  Description: "Markup conversion"
-  Exports: [html-rem load-rem mold-html]
-]
-
-html: make object! [
-  markup-char: charset "<&>"
-
-  encode: func [x [string! char!] r: t:] [
-    if char? x [x: to-string x]
-    unless find x markup-char [return x]
-    r: make string! to-integer (1.1 * length x +1)
-    parse x [
-      some [
-        copy t [to markup-char | to end] (append r t)
-        [ #"&" (append r "&amp;")
-        | #"<" (append r "&lt;")
-        | #">" (append r "&gt;")
-        | end
-        ]
-      ]
-    ] r
-  ]
-
-  quot: func [x] [
-    ajoin [#""" x #"""]
-  ]
-
-  mold-style-map: func [m s: k: v:] [
-    s: _
-    for-each [k v] m [
-      k: ajoin [k #":"]
-      either s [repend s ["; " k]] [s: k]
-      repend s [space v]
-    ] s
-  ]
-
-  mold-style-tag: func [x r: k: v: s:] [
-    s: _
-    for-each [k v] x [
-      r: _
-      for-each k k [
-        either r
-        [ repend r [", " k] ]
-        [ r: to-string k ]
-      ]
-      either s
-      [ append s r ]
-      [ s: r ]
-      repend s [" { " mold-style-map v " } "]
-    ]
-    s
-  ]
-
-  mold: func [x a: b: c: t: k: v:] [
-    switch/default type-of x [
-      :blank! [""]
-      :string! :char! [encode x]
-      :block! [ajoin map-each t x [mold t]]
-      :map! [
-        a: to-tag "" c: _
-        for-each [k v] x [case [
-          k = 'tag! [t: v]
-          k = '. [c: v]
-          k = 'id [insert a ajoin [" id=" quot v]]
-          k = 'class [insert a ajoin [" class=" quot v]]
-          k = 'style [insert a ajoin [" style=" quot mold-style-map v]]
-          word? k [append a ajoin [space k "=" quot v] ]
-        ] ]
-        if t = 'doc [t: 'html]
-        c: either t = 'style
-        [ mold-style-tag c ]
-        [ mold c ]
-        b: to-tag t
-        either 'EMPTY-TAG = get :t [
-          append a #"/" b: "" t: to-word t
-        ] [
-          b: back insert b #"/"
-        ]
-        insert a t
-        ajoin [a c b]
-      ]
-    ] [print ["Invalid" x type-of x] quit]
-  ]
+  Description: "REbol Markup format"
+  Exports: [load-rem]
 ]
 
 rem: make object! [
@@ -228,9 +147,5 @@ load-rem: func[x [block! string!] /secure t: ] [
   [ x: bind x rem ]
   do x
 ]
-
-mold-html: :html/mold
-
-html-rem: chain [:load-rem :html/mold]
 
 ;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:

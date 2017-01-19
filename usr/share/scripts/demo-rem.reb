@@ -24,46 +24,46 @@ demo: func [code] [
 ]
 demo [
   "Import module:"
-  (import 'markup)
+  (import 'rem)
   _
   "Example of ReM code:"
   {rem [p ["paragraph" br "breakline" ]]}
   _
-  "HTML|REM convert it to HTML:"
-  [html-rem [rem [p ["paragraph" br "breakline" ]]]]
+  "LOAD-REM convert it to document tree (DoT):"
+  [load-rem [rem [p ["paragraph" br "breakline" ]]]]
   _
   {[REM [...]] is a document,
   while [REM ...] is a fragment:}
-  [html-rem [rem p ["paragraph" br "breakline" ]]]
+  [load-rem [rem p ["paragraph" br "breakline" ]]]
   _
   {Text is wrote as strings, tags as words:}
-  [html-rem [rem b "bold" hr i "italic"]]
+  [load-rem [rem b "bold" hr i "italic"]]
   _
   "Spaces must be explicitly inserted in strings, or with SPACE:"
-  [html-rem [rem b "bold" space "normal " i "italic"]]
-  [html-rem [rem i "this" "has" b "no" "spaces"]]
+  [load-rem [rem b "bold" space "normal " i "italic"]]
+  [load-rem [rem i "this" "has" b "no" "spaces"]]
   _
-  [html-rem [rem "< & > are straightforward."]]
+  [load-rem [rem "< & > are straightforward."]]
   {Tags accept optional attributes before content:
   - attribute: /refinement value
   - style: set-word: value [...] }
-  [html-rem [rem p /width 100 font-size: ajoin [10 "pt"] color: 'red "content"]]
+  [load-rem [rem p /width 100 font-size: ajoin [10 "pt"] color: 'red "content"]]
   "NOTE: values are evaluated!"
   _
   {Other special cases:
   - id: #issue
   - class: .word [...]
   - href, src: %file or url://...}
-  [html-rem [rem a #foo http://www.example.com img .bar1 .bar2 %test.png]]
+  [load-rem [rem a #foo http://www.example.com img .bar1 .bar2 %test.png]]
   _
   "STYLE tag has its own (limited) syntax:"
-  [html-rem [rem style [
+  [load-rem [rem style [
     #foo .bar .foobar font-size: 95%
     p h1 text-align: center border: "1pt red solid"
   ] ] ]
   _
   "You can define your own templates before REM:"
-  [html-rem [bi: func [x y] [rem b x "&" i y]
+  [load-rem [bi: func [x y] [rem b x "&" i y]
     rem [bi "< bold" "italic >"]
   ]]
 ]

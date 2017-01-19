@@ -12,9 +12,9 @@ usr/lib/r3/csv.reb \
 usr/lib/r3/custom.reb \
 usr/lib/r3/fraction.reb \
 usr/lib/r3/html.reb \
-usr/lib/r3/markup.reb \
 usr/lib/r3/profile.reb \
 usr/lib/r3/recode.reb \
+usr/lib/r3/rem.reb \
 usr/lib/r3/rewrite.r \
 usr/lib/r3/shttpd.reb \
 usr/lib/r3/sl4a.reb \
@@ -25,7 +25,7 @@ usr/share/doc/r3/rem-tutorial.html \
 usr/share/scripts/demo-complex.reb \
 usr/share/scripts/demo-csv.reb \
 usr/share/scripts/demo-fraction.reb \
-usr/share/scripts/demo-markup.reb \
+usr/share/scripts/demo-rem.reb \
 usr/share/scripts/factors.reb \
 usr/share/scripts/shttpd.reb
 
