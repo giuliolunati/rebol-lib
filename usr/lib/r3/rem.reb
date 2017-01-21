@@ -22,90 +22,90 @@ rem: make object! [
   meta: hr: br: img:
   'EMPTY-TAG
 
-  rem: func [
-    args [any-value! <...>]
-    :look [any-value! <...>]
-    x: b: dot: read-1:
-  ][
-    read-1: func [
+  rem-1: func [
+      args [any-value! <...>]
+      :look [any-value! <...>]
       id: class: style: node: t: w:
     ][
-      w: first look
-      if any [path? :w all [word? :w
-        'TAG != get :w 'EMPTY-TAG != get :w
-      ] ] [return take args]
-      unless word? :w [return take look]
-      take look
-      node: make-tag-node :w
-      class: id: style: _
-      forever [
-        t: first look
-        if word? t [
-          if #"." = first to-string t [ take look
-            unless class [class: make block! 4]
-            append class to-word next to-string t
-            continue
-          ]
-          break
-        ]
-        if refinement? t [ take look
-          t: to-word t
-          set-attribute node t read-1
-          ; ^--- for non-HTML applications:
-          ; value of an attribute may be a node!
-          continue
-        ]
-        if set-word? t [ take look
-          t: to-word t
-          unless style [style: make block! 16]
-          set-attribute style t take args
-          continue
-        ]
-        if issue? t [ take look
-          id: next to-string t
-          continue
-        ]
-        if any [url? t file? t] [ take look
-          set-attribute node
-            either/only w = 'a 'href 'src
-            t
+    w: first look
+    if group? :w [take args return _]
+    if any [path? :w all [word? :w
+      'TAG != get :w 'EMPTY-TAG != get :w
+    ] ] [return take args]
+    unless word? :w [return take look]
+    take look
+    node: make-tag-node :w
+    class: id: style: _
+    forever [
+      t: first look
+      if word? t [
+        if #"." = first to-string t [ take look
+          unless class [class: make block! 4]
+          append class to-word next to-string t
           continue
         ]
         break
       ]
-      if style [set-attribute node 'style style]
-      if class [set-attribute node 'class form class]
-      if id [set-attribute node 'id id]
-      if 'TAG = get :w [
-        case [
-          block? t [
-            insert x: take look 'rem ; DIRTY HACK!
-            t: do x
-            take x
-          ]
-          string? t [take look]
-          any [word? t path? t] [
-            t: read-1
-          ]
-        ]
-        set-content node t
+      if refinement? t [ take look
+        t: to-word t
+        set-attribute node t apply 'rem-1 [args: args look: look]
+        ; ^--- for non-HTML applications:
+        ; value of an attribute may be a node!
+        continue
       ]
-      node
+      if set-word? t [ take look
+        t: to-word t
+        unless style [style: make block! 16]
+        set-attribute style t take args
+        continue
+      ]
+      if issue? t [ take look
+        id: next to-string t
+        continue
+      ]
+      if any [url? t file? t] [ take look
+        set-attribute node
+          either/only w = 'a 'href 'src
+          t
+        continue
+      ]
+      break
     ]
+    if style [set-attribute node 'style style]
+    if class [set-attribute node 'class form class]
+    if id [set-attribute node 'id id]
+    if 'TAG = get :w [
+      case [
+        block? t [
+          t: make varargs! take look
+          t: apply 'rem [args: t look: t]
+        ]
+        string? t [take look]
+        any [word? t path? t] [
+          t: apply 'rem-1 [args: args look: look]
+        ]
+      ]
+      set-content node t
+    ]
+    node
+  ]
 
+  rem: func [
+      args [any-value! <...>]
+      :look [any-value! <...>]
+      x: b: dot:
+    ][
     x: first look
     if block? x [
-      dot: make-tag-node 'doc
-      insert x: take look 'rem ; DIRTY HACK!
-      set-content dot do x
-      take x
-      return dot
+      x: make varargs! take look
+      return apply 'rem [args: x look: x] 
     ]
     b: make block! 8
     forever [
       x: first look
       unless x [break]
-      append/only b read-1
+      x: apply 'rem-1 [args: args look: look]
+      if x [append/only b x]
     ]
     if 1 < length b [return b]
     b/1
@@ -143,12 +143,16 @@ rem: make object! [
   ]
 ]
 
-load-rem: func[x [block! string!] /secure t: ] [
+load-rem: func [
+    x [block! string!]
+    /secure t:
+  ][
   if string? x [return x]
   either secure
   [ x: bind/new x rem ]
   [ x: bind x rem ]
-  do x
+  x: make varargs! x
+  apply :rem/rem [args: x look: x]
 ]
 
 ;; vim: set syn=rebol sw=2 ts=2 sts=2 expandtab:

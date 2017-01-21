@@ -1,18 +1,21 @@
 REBOL []
-demo: func [x /only t: b:] [
-  t: load-rem x
-  rem
-    p i "ReM code:"
-    div .code mold/only x
-    p i "HTML equivalent:"
-    div .code mold-html t
-    p i "Display:"
-    div .sample t
-    br
-]
+( ; setup
+  demo: func [x /only t: b:] [
+    t: load-rem x
+    rem
+      p i "ReM code:"
+      div .code mold/only x
+      p i "HTML equivalent:"
+      div .code mold-html t
+      p i "Display:"
+      div .sample t
+      br
+  ]
 
-tit: "ReM format tutorial"
-rem [
+  tit: "ReM format tutorial"
+) ; end setup
+
+doc [
 head [
   viewport 1
   title tit
