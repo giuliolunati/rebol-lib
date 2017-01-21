@@ -5,11 +5,14 @@ REBOL [
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
   Date: 2016-09-01
-  ; Needs: websy
 ]
 
-markup: import 'markup
 websy: import 'websy
+html: import 'html
+rem: import 'rem
+
+mold-html: :html/mold-html
+load-rem: :rem/load-rem
 config: websy/config
 
 websy/extend/set [
@@ -93,7 +96,7 @@ websy/extend/set [
           "REBOL" = uppercase to-string copy/part data 5
         ] ] [
           either error? data: trap [
-            markup/html-rem load data
+            mold-html load-rem load data
           ] [data: form data mime: 'txt]
           [mime: 'html]
         ]

@@ -7,7 +7,7 @@ REBOL [
     mold-html
     split-html
   ]
-  Needs: [text]
+  Needs: [text dot]
   Author: "giuliolunati@gmail.com"
   Version: 0.1.1
 ]
@@ -115,7 +115,7 @@ split-html: function [data [string!]] [
     ]
     any space!
   ]
-  comment!: ["!--" thru "--"]
+  comment!: ["!--" thru "--" and #">"]
   !tag!: [#"!" to #">"]
   ?tag!: [#"?" to #">"]
   atag!: [
@@ -134,9 +134,9 @@ split-html: function [data [string!]] [
   html!: [ any [
       copy t to mark! (emit t)
       [  #"<" copy t [comment! | !tag!] #">"
-        (emit '! emit next t)
+        (emit '! emit reduce [next t])
       |  #"<" copy t ?tag! #">"
-        (emit '? emit next t)
+        (emit '? emit reduce [next t])
       |  data-tag! | atag! | ztag! | entity!
       |  set t skip (emit t)
       ]
@@ -148,23 +148,25 @@ split-html: function [data [string!]] [
 
 load-html: func [
     x [block! string!]
-    get-tag: ret: t:
+    get-tag: dot: t:
   ][
-  get-tag: func [c: t: m:] [
-    m: make block! 8
+  get-tag: func [c: t: node:] [
     t: x/1  x: next x
-    append m 'tag
-    append/only m to string! t
+    node: make-tag-node :t
     if any [t = '?  t = '!] [
       unless tail? x [
-        append m '.
-        append m x/1
+        set-content node x/1
         x: next x
       ]
-      return m
+      return node
     ]
-    if block? x/1 [append m x/1 x: next x]
-    if is-empty/:t [return m]
+    if block? x/1 [
+      foreach [k v] x/1 [
+        set-attribute node k v
+      ]
+      x: next x
+    ]
+    if is-empty/:t [return node]
     c: make block! 8
     forever [
       case [
@@ -184,26 +186,26 @@ load-html: func [
       1 [c: c/1]
       0 [c: _]
     ]
-    if c [append m '. append/only m c]
-    m
+    if c [set-content node c]
+    node
   ]
 
   if string? x [x: split-html x]
-  ret: make block! 8
+  dot: make block! 8
   forever [
     if tail? x [break]
     t: x/1
     case [
-      word? t [append/only ret get-tag]
-      any [string? t tag? t] [append/only ret t x: next x]
+      word? t [append/only dot get-tag]
+      any [string? t tag? t] [append/only dot t x: next x]
       true [fail ajoin ["invalid " t]]
     ]
   ]
-  switch length ret [
-    1 [ret: ret/1]
-    0 [ret: _]
+  switch length dot [
+    1 [dot: dot/1]
+    0 [dot: _]
   ]
-  ret
+  dot
 ]
 
 mold-style: func [
@@ -235,38 +237,49 @@ quote-html: func [
 ]
 
 mold-html: func [
-    x [block! string! tag!]
-    ret: tag:
+    x
+    ret: tag: k: v:
   ] [
-  if string? x [return quote-html x]
-  if tag? x [return ajoin [#"&" to string! x #";"]]
-  assert [block? x]
-  ret: make string! 512
-  either 'tag = x/1 [
-    append ret #"<"
-    foreach [k v] x [case [
-      k = 'tag [append ret tag: to word! v]
-      k = '. [
-        assert [not is-empty/:v]
-        append ret #">"
-        append ret mold-html v
-        append ret "</"
-        append ret tag
-        append ret #">"
-      ]
-      true [
+  case [
+    tag: get-tag-name x [
+      ret: make string! 512
+      if tag = 'doc [tag: 'html]
+      append ret #"<"
+      append ret tag
+      for-each-attribute k v x [
         append ret space 
         append ret k
         append ret #"="
         append ret quote-string
-          either k = 'style [mold-style v] [v]
+          either k = 'style [mold-style v] [to-string v]
       ]
-    ] ]
-    if is-empty/:tag [append ret "/>"]
-  ] [
-    forall x [
-      append ret mold-html x/1
+      v: get-content x
+      case [
+        any [tag = '! tag = '?] [
+          append ret v
+          append ret #">"
+        ]
+        is-empty/:tag [append ret "/>"]
+        true [
+          append ret #">"
+          append ret
+            either tag = 'style
+            [ mold-style-def v ]
+            [ mold-html v ]
+          append ret "</"
+          append ret tag
+          append ret #">"
+        ]
+      ]
     ]
+    block? x [
+      ret: make string! 512
+      forall x [
+        append ret mold-html x/1
+      ]
+    ]
+    tag? x [ret: ajoin [#"&" to string! x #";"]]
+    true [ret: quote-html to-string x]
   ]
   ret
 ]

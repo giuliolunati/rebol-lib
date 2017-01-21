@@ -10,6 +10,7 @@ usr/lib/r3/altjson.reb \
 usr/lib/r3/complex.reb \
 usr/lib/r3/csv.reb \
 usr/lib/r3/custom.reb \
+usr/lib/r3/dot.reb \
 usr/lib/r3/fraction.reb \
 usr/lib/r3/html.reb \
 usr/lib/r3/profile.reb \

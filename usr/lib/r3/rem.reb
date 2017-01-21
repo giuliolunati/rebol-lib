@@ -4,6 +4,7 @@ REBOL [
   Author: "Giulio Lunati"
   Email: giuliolunati@gmail.com
   Description: "REbol Markup format"
+  Needs: [dot]
   Exports: [load-rem]
 ]
 
@@ -24,10 +25,10 @@ rem: make object! [
   rem: func [
     args [any-value! <...>]
     :look [any-value! <...>]
-    x: b: m: read-1:
+    x: b: dot: read-1:
   ][
     read-1: func [
-      id: class: style: m: t: w:
+      id: class: style: node: t: w:
     ][
       w: first look
       if any [path? :w all [word? :w
@@ -35,8 +36,7 @@ rem: make object! [
       ] ] [return take args]
       unless word? :w [return take look]
       take look
-      m: make map! 8
-      m/tag!: :w
+      node: make-tag-node :w
       class: id: style: _
       forever [
         t: first look
@@ -50,15 +50,15 @@ rem: make object! [
         ]
         if refinement? t [ take look
           t: to-word t
-          m/:t: read-1
+          set-attribute node t read-1
           ; ^--- for non-HTML applications:
           ; value of an attribute may be a node!
           continue
         ]
         if set-word? t [ take look
           t: to-word t
-          unless style [style: make map! 8]
-          style/:t: take args
+          unless style [style: make block! 16]
+          set-attribute style t take args
           continue
         ]
         if issue? t [ take look
@@ -66,14 +66,16 @@ rem: make object! [
           continue
         ]
         if any [url? t file? t] [ take look
-          either w = 'a [m/href: t] [m/src: t]
+          set-attribute node
+            either/only w = 'a 'href 'src
+            t
           continue
         ]
         break
       ]
-      if style [m/style: style]
-      if class [m/class: class]
-      if id [m/id: id]
+      if style [set-attribute node 'style style]
+      if class [set-attribute node 'class form class]
+      if id [set-attribute node 'id id]
       if 'TAG = get :w [
         case [
           block? t [
@@ -86,25 +88,24 @@ rem: make object! [
             t: read-1
           ]
         ]
-        m/.: t
+        set-content node t
       ]
-      m
+      node
     ]
 
     x: first look
     if block? x [
-      m: make map! 2
-      m/tag!: 'doc
+      dot: make-tag-node 'doc
       insert x: take look 'rem ; DIRTY HACK!
-      m/.: do x
+      set-content dot do x
       take x
-      return m
+      return dot
     ]
     b: make block! 8
     forever [
       x: first look
       unless x [break]
-      append b read-1
+      append/only b read-1
     ]
     if 1 < length b [return b]
     b/1
@@ -119,15 +120,17 @@ rem: make object! [
       (b: make block! 4)
       some [selector! (append b t)]
       (append/only s b)
-      (t: make map! 8)
+      (t: make block! 16)
       some [
         set k set-word! set v skip
-        (k: to-word k t/:k: v)
+        ( k: to-word k
+          append t k append t v
+        )
       ]
-      (append s t)
+      (append/only s t)
     ] ]
-    make map! reduce [
-      'tag! 'style
+    make block! reduce [
+      'tag "style"
       '. s
     ]
   ]
