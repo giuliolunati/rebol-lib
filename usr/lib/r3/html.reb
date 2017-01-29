@@ -218,7 +218,26 @@ mold-style: func [
     if not empty? ret [append ret "; "]
     append ret k
     append ret ": "
-    append ret quote-string/single v
+    append ret v
+  ]
+  ret
+]
+
+mold-style-def: func [
+    x [block! string!]
+    ret:
+  ][
+  if string? x [return x]
+  ret: make string! 32
+  foreach [k v] x [
+    forall k [
+      if not head? k [append ret #","]
+      append ret space
+      append ret k/1
+    ]
+    append ret " {"
+    append ret mold-style v
+    append ret #"}"
   ]
   ret
 ]
