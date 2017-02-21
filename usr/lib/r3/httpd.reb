@@ -4,6 +4,7 @@ Rebol [
     Type: module
     Date: 10-Jun-2013
     Author: [
+        "Giulio Lunati" 21-Feb-2017 "Various enhancements"
         "Christopher Ross-Gill" 4-Jan-2017 "Adaptation to Scheme"
         "Andreas Bolka" 4-Nov-2009 "A Tiny HTTP Server"
     ]
@@ -18,6 +19,64 @@ Rebol [
 ]
 
 attempt [_: none] ; for Rebolsource Rebol 3 Compatibility
+
+deurl: function [
+    "decode an url encoded string"
+    s [string!]
+][
+    dehex replace/all s #"+" #" "
+]
+
+parse-request: function [
+    ;; from Ingo Hohmann's Websy
+    ;; https://github.com/IngoHohmann/websy
+    {parse request and return a map! with header-names as keys
+    (standard headers are words, others are strings) }
+    request [string!]
+][
+    name-char: complement charset ":"
+    query-split-char: charset "&="
+    req: make map! []
+    parse request [
+        copy method: to #" " skip
+        copy path: to #" " skip
+        copy version: to newline newline
+        (
+            req/method: method
+            req/version: version
+            req/string: ajoin [method space path]
+            set [path: query-string:] split path #"?"
+            path: deurl path
+            req/path: path
+            req/path-elements: next split path #"/"
+            req/file-name: last req/path-elements
+            either pos: find/last req/file-name #"." [
+                req/file-base: copy/part req/file-name pos
+                req/file-type: copy next pos
+            ][
+                req/file-base: req/file-name
+                req/file-type: ""
+            ]
+            either all[set? 'query-string query-string ] [
+                req/query-string: query-string
+            ][
+                req/query-string: ""
+            ]
+        )
+        any [
+            copy name: [some name-char] 2 skip copy data: to newline
+            ( name: to-word name    req/:name: data )
+            newline
+        ]
+        newline
+        copy content-string: to end
+        (
+            req/content-string: content-string
+            req/content: map split content-string query-split-char
+        )
+    ]
+    req
+]
 
 sys/make-scheme [
     Title: "HTTP Server"
@@ -69,26 +128,19 @@ sys/make-scheme [
         either empty? port/locals/body [true][write port take/part port/locals/body 32'000]
     ]
 
-    Awake-Client: use [from-actions chars][
-        from-actions: ["GET" | "POST"]
-        chars: complement union space: charset " " charset [#"^@" - #"^_"]
+    Awake-Client: use [q] [
         
         func [event [event!] /local port request response][
             port: event/port
 
             switch event/type [
                 read [
-                    either find port/data to-binary rejoin [crlf crlf][
-                        response: port/locals/parent/awake request: make object! [
-                            action: target: _
-                            remote-ip: select query port 'remote-ip
-                            remote-port: select query port 'remote-port
-                            parse to-string port/data [
-                                copy action from-actions some space
-                                copy target some chars some space
-                                "HTTP/" ["1.0" | "1.1"]
-                            ]
-                        ]
+                    either find port/data to-binary rejoin [crlf crlf] [
+                        request: parse-request to-string port/data
+                        q: query port
+                        request/remote-ip: q/remote-ip
+                        request/remote-port: q/remote-port
+                        response: port/locals/parent/awake request
                         respond port response
                     ][
                         read port
