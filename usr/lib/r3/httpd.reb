@@ -81,6 +81,8 @@ sys/make-scheme [
                     either find port/data to-binary rejoin [crlf crlf][
                         response: port/locals/parent/awake request: make object! [
                             action: target: _
+                            remote-ip: select query port 'remote-ip
+                            remote-port: select query port 'remote-port
                             parse to-string port/data [
                                 copy action from-actions some space
                                 copy target some chars some space
