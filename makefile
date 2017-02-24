@@ -18,11 +18,10 @@ usr/lib/r3/profile.reb \
 usr/lib/r3/rec.reb \
 usr/lib/r3/rem.reb \
 usr/lib/r3/rewrite.r \
-usr/lib/r3/shttpd.reb \
 usr/lib/r3/sl4a.reb \
 usr/lib/r3/sort.reb \
 usr/lib/r3/text.reb \
-usr/lib/r3/websy.reb \
+usr/lib/r3/webserver.reb \
 usr/share/doc/r3/rem-tutorial.html \
 usr/share/scripts/demo-complex.reb \
 usr/share/scripts/demo-csv.reb \
@@ -31,7 +30,7 @@ usr/share/scripts/demo-html.reb \
 usr/share/scripts/demo-rec.reb \
 usr/share/scripts/demo-rem.reb \
 usr/share/scripts/factors.reb \
-usr/share/scripts/shttpd.reb
+usr/share/scripts/server.reb
 
 ${DEB}: data.tar.gz control.tar.gz debian-binary makefile
 	ar r $@ debian-binary control.tar.gz data.tar.gz
