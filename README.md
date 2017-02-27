@@ -1,2 +1,1 @@
-rebol-lib has moved to [ren-c-lib](https://git
-hub.com/giuliolunati/ren-c-lib)
+rebol-lib has moved to [ren-c-lib](https://github.com/giuliolunati/ren-c-lib)
